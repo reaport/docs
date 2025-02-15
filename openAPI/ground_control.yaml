@@ -1,0 +1,295 @@
+openapi: 3.0.0
+info:
+  title: Ground Control API
+  version: 1.0.0
+  description: API для управления движением транспорта.
+
+paths:
+  /map:
+    get:
+      summary: Получить карту аэропорта
+      description: Возвращает полную карту аэропорта в виде графа.
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirportMap'
+              example:
+                nodes:
+                  - id: "node1"
+                    types: ["airplane"]
+                    isInitial: false
+                  - id: "node2"
+                    types: ["catering"]
+                    isInitial: true
+                edges:
+                  - from: "node1"
+                    to: "node2"
+                    distance: 100
+
+  /map/nodes:
+    post:
+      summary: Добавить узел на карту
+      description: Добавляет новый узел на карту аэропорта.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Node'
+            example:
+              id: "node3"
+              types: ["refueling"]
+              isInitial: true
+      responses:
+        '201':
+          description: Узел успешно добавлен
+        '400':
+          description: Неверные данные узла
+
+  /map/edges:
+    post:
+      summary: Добавить ребро на карту
+      description: Добавляет новое ребро между узлами на карте аэропорта.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Edge'
+            example:
+              from: "node2"
+              to: "node3"
+              distance: 150
+      responses:
+        '201':
+          description: Ребро успешно добавлено
+        '400':
+          description: Неверные данные ребра
+
+  /route:
+    post:
+      summary: Запросить маршрут
+      description: Запрашивает маршрут из точки А в точку Б.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                from:
+                  type: string
+                  description: ID начального узла
+                to:
+                  type: string
+                  description: ID конечного узла
+              required:
+                - from
+                - to
+            example:
+              from: "node1"
+              to: "node3"
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  description: ID узлов маршрута
+              example: ["node1", "node2", "node3"]
+        '404':
+          description: Маршрут не найден
+
+  /move:
+    post:
+      summary: Запросить разрешение на перемещение
+      description: Запрашивает разрешение на перемещение из одного узла в другой.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vehicleId:
+                  type: string
+                  description: ID транспорта
+                vehicleType:
+                  $ref: '#/components/schemas/VehicleType'
+                from:
+                  type: string
+                  description: ID текущего узла
+                to:
+                  type: string
+                  description: ID следующего узла
+              required:
+                - vehicleId
+                - vehicleType
+                - from
+                - to
+            example:
+              vehicleId: "truck1"
+              vehicleType: "catering"
+              from: "node1"
+              to: "node2"
+      responses:
+        '200':
+          description: Разрешение получено
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  distance:
+                    type: number
+                    description: Расстояние до следующего узла
+                required:
+                  - distance
+              example:
+                distance: 100
+        '400':
+          description: Неверные данные запроса
+        '403':
+          description: Перемещение запрещено
+        '404':
+          description: Один из узлов не найден
+        '409':
+          description: Узел занят
+
+  /arrived:
+    post:
+      summary: Уведомить о прибытии в узел
+      description: Уведомляет вышку о прибытии транспорта в узел.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vehicleId:
+                  type: string
+                  description: ID транспорта
+                vehicleType:
+                  $ref: '#/components/schemas/VehicleType'  
+                nodeId:
+                  type: string
+                  description: ID узла
+              required:
+                - vehicleId
+                - vehicleType
+                - nodeId
+            example:
+              vehicleId: "truck1"
+              vehicleType: "catering"
+              nodeId: "node2"
+      responses:
+        '200':
+          description: Уведомление успешно обработано
+        '400':
+          description: Неверные данные запроса
+          
+  /spawn-vehicle:
+    post:
+      summary: Получить узел, в котором заспавнился транспорт
+      description: В зависимости от типа транспорта отдает нужную начальную точку.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vehicleId:
+                  type: string
+                  description: ID транспорта
+                vehicleType:
+                  $ref: '#/components/schemas/VehicleType'
+              required:
+                - vehicleId
+                - vehicleType
+            example:
+              vehicleId: "truck1"
+              vehicleType: "catering"
+      responses:
+        '200':
+          description: Id узла начальной точки
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nodeId:
+                    type: string
+                    description: ID узла
+                required:
+                  - nodeId
+              example:
+                nodeId: "node2"
+        '400':
+          description: Неверные данные запроса
+        '403':
+          description: Нет свободного узла
+
+components:
+  schemas:
+    AirportMap:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Edge'
+      required:
+        - nodes
+        - edges
+
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор узла
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleType'
+        isInitial:
+          type: boolean
+          description: Может ли узел являться начальной точкой транспорта
+      required:
+        - id
+        - types
+        - isInitial
+
+    Edge:
+      type: object
+      properties:
+        from:
+          type: string
+          description: ID начального узла
+        to:
+          type: string
+          description: ID конечного узла
+        distance:
+          type: number
+          description: Расстояние между узлами
+      required:
+        - from
+        - to
+        - distance
+        
+    VehicleType:
+      type: string
+      enum: [airplane, catering, refueling, cleaning, baggage, follow-me]
+      description: Тип транспорта
