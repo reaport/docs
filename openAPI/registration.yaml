@@ -1,20 +1,13 @@
 openapi: 3.0.3
 info:
   title: Reaport Module API
-  description: |-
-    API для всех модулей аэропорта 
-    
-    Полезные ссылки:
-    - [Доска miro](https://miro.com/app/board/uXjVLlFVjVE=)
-    - [Описание каждого модуля](https://docs.google.com/document/d/1-A99pLnf-T3KJgUowspAIestsUUSzbDQ0Sfr5KvSmdI/edit?tab=t.5uuae64uwih2l)
-    - [GitLub](https://github.com/reaport)
-    - [Kaiten (ToDo)](https://julia89649117555.kaiten.ru/space/530676/boards?focus=card&focusId=44921545)
-    - [SwaggerEditor](https://editor.swagger.io/)
+  description: hello
   version: 1.0.0
 
 servers:
   - url: 'http://reaport.ru/'
     description: Production server
+
 
 tags:
   - name: Registration
