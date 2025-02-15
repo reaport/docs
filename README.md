@@ -16,7 +16,7 @@ API для всех модулей аэропорта.
   Подробное описание функционала каждого модуля.
 
 - **GitHub**:  
-  [![GitHub](https://img.shields.io/badge/GitLab-Repository-orange?logo=github)](https://github.com/reaport)  
+  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/reaport)
   Исходный код и управление версиями.
 
 - **Kaiten (ToDo)**:  
