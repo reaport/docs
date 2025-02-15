@@ -1,0 +1,250 @@
+openapi: 3.0.3
+info:
+  title: Reaport Register Module API
+  description: Api для модуля регистрации пассажира на рейс
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:8080/'
+    description: Local server
+
+paths:
+  /passengers/register:
+    post:
+      summary: Регистрация пассажира
+      description: Получение от модуля генерации пассажиров человека для регистрации.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterPassengerRequest'
+      responses:
+        '200':
+          description: Успешная регистрация
+        '400':
+          description: Неверный запрос (ошибка валидации)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Validation error"
+        '403':
+          description: Регистрация не открыта
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Registration is not open"
+        '404':
+          description: Пассажир не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "The passenger was not found"
+        '410':
+          description: Регистрация на рейс закрыта
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Flight check-in is closed"
+        '422':
+          description: Неверный тип питания
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Wrong type of food"
+        '423':
+          description: Превышение допустимого размера багажа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Exceeding the allowed baggage size"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Internal server error"
+
+  /flights/register:
+    post:
+      summary: Открытие регистрации на рейс
+      description: Получение от модуля табло информации о рейсах, доступных для регистрации.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlightStatusRequest'
+            examples:
+              twoFlightsExample:
+                value:
+                  - flightId: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+                    flightName: "SU-1234"
+                    departureTime: "2023-10-15T14:30:00Z"
+                    gate: "A15"
+                    terminal: "D"
+                    seatMap:  # Добавлена информация о рассадке
+                      totalRows: 30
+                      totalSeatsPerRow: 6
+                      rows:
+                        - rowNumber: 1
+                          seats:
+                            - seatNumber: "1A"
+                              seatType: "VIP"
+                            - seatNumber: "1B"
+                              seatType: "VIP"
+                        - rowNumber: 2
+                          seats:
+                            - seatNumber: "2A"
+                              seatType: "standard"
+                            - seatNumber: "2B"
+                              seatType: "standard"
+                  - flightId: "b2c3d4e5-f6g7-8901-h2i3-j4k5l6m7n8o9"
+                    flightName: "SU-5678"
+                    departureTime: "2023-10-15T15:00:00Z"
+                    gate: "B10"
+                    terminal: "E"
+                    seatMap:  # Добавлена информация о рассадке
+                      totalRows: 25
+                      totalSeatsPerRow: 4
+                      rows:
+                        - rowNumber: 1
+                          seats:
+                            - seatNumber: "1A"
+                              seatType: "VIP"
+                            - seatNumber: "1B"
+                              seatType: "VIP"
+                        - rowNumber: 2
+                          seats:
+                            - seatNumber: "2A"
+                              seatType: "standard"
+                            - seatNumber: "2B"
+                              seatType: "standard"
+      responses:
+        '200':
+          description: Рейсы успешно зарегистрированы
+        '400':
+          description: Неверный запрос (ошибка валидации)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Validation error"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Internal server error"
+
+components:
+  schemas:
+    RegisterPassengerRequest:
+      type: object
+      required:
+        - idTraveler
+      properties:
+        idTraveler:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пассажира (idTraveler)
+        baggageWeight:
+          type: number
+          format: float
+          description: Вес багажа (кг)
+        foodOnBoard:
+          type: string
+          nullable: true
+          enum: [Сет 1, Сет 2, Сет 3, Без питания]  # Тип питания как enum
+          description: Новый тип питания
+      example:
+        idTraveler: "123e4567-e89b-12d3-a456-426614174000"
+        baggageWeight: 23.5
+        foodOnBoard: "Сет 1"
+
+    FlightStatusRequest:
+      type: object
+      properties:
+        flightId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор рейса
+        flightName:
+          type: string
+          description: Название рейса
+        departureTime:
+          type: string
+          format: date-time
+          description: Время вылета
+        gate:
+          type: string
+          nullable: true
+          description: Номер выхода (гейта)
+        terminal:
+          type: string
+          nullable: true
+          description: Терминал
+        seatMap:  # Добавлена информация о рассадке
+          $ref: '#/components/schemas/SeatMap'
+
+    SeatMap:
+      type: object
+      properties:
+        totalRows:
+          type: integer
+          description: Общее количество рядов в самолёте
+        totalSeatsPerRow:
+          type: integer
+          description: Общее количество кресел в одном ряду
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeatRow'
+
+    SeatRow:
+      type: object
+      properties:
+        rowNumber:
+          type: integer
+          description: Номер ряда
+        seats:
+          type: array
+          items:
+            $ref: '#/components/schemas/Seat'
+
+    Seat:
+      type: object
+      properties:
+        seatNumber:
+          type: string
+          description: Номер места (например, "1A", "2B")
+        seatType:
+          type: string
+          enum: [VIP, standard, disabled]
+          description: Тип места (VIP, обычное, для маломобильных)
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Описание ошибки
