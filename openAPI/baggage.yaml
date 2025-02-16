@@ -226,7 +226,7 @@ paths:
 
 
 
-  /settings:
+  /baggage/settings:
     post:
       summary: Обновить настройки (вместимость одной машины багажа)
       requestBody:
