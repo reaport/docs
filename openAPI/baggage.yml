@@ -5,7 +5,7 @@ info:
   description: API для управления загрузкой и выгрузкой багажа 
 
 servers: 
-  - url: 'http://reaport.ru/' 
+  - url: 'https://baggage.reaport.ru/' 
     description: Production server 
 
 paths: 
@@ -35,8 +35,16 @@ paths:
                   format: integer 
                   description: Координаты самолёта 
       responses: 
-        '204': 
+        '200': 
           description: Успешный запрос 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  waiting: 
+                    type: bool
+                    description: true, если свободных машин нет, иначе false
         '400': 
           description: Неверный запрос 
           content: 
@@ -83,8 +91,16 @@ paths:
                   format: integer 
                   description: Координаты самолёта 
       responses: 
-        '204': 
+        '200': 
           description: Успешный запрос 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  waiting: 
+                    type: bool
+                    description: true, если свободных машин нет, иначе false
         '400': 
           description: Неверный запрос 
           content: 
