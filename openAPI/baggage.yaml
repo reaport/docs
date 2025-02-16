@@ -63,7 +63,7 @@ paths:
                   error:
                     type: string
                     description: Описание ошибки
-  /baggage/load/{flight_id}:
+  /baggage/load/{aircraft_id}:
     get:
       summary: Получить состояние загрузки багажа по номеру самолёта
       parameters:
@@ -87,7 +87,7 @@ paths:
                     type: string
                     enum: ["Ожидание свободных машин", "Багаж в пути к самолету", "Загрузка багажа", "Загрузка завершена"]
                     description: Состояние багажа
-                '400':
+        '400':
           description: Неверный запрос 
           content:
             application/json:
