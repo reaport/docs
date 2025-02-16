@@ -6,7 +6,7 @@ info:
   version: 1.0.0
 
 paths:
-  /followme_api/get_car:
+  /get_car:
     post:
       summary: Запрос машины сопровождения
       description: |
@@ -70,7 +70,7 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
-  /followme_api/navigate:
+  /navigate:
     post:
       summary: Отправка маршрута передвижения
       description: |
