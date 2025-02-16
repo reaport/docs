@@ -240,5 +240,4 @@ paths:
                   type: integer
       responses:
         '200':
-          description: Настройки обновлены 
-
+          description: Настройки обновлены
