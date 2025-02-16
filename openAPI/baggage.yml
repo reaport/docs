@@ -1,218 +1,218 @@
-openapi: 3.0.0
-info:
-  title: Baggage API
-  version: 1.0.0
-  description: API для управления загрузкой и выгрузкой багажа
+openapi: 3.0.0 
+info: 
+  title: Baggage API 
+  version: 1.0.0 
+  description: API для управления загрузкой и выгрузкой багажа 
 
-servers:
-  - url: 'http://reaport.ru/'
-    description: Production server
+servers: 
+  - url: 'http://reaport.ru/' 
+    description: Production server 
 
-paths:
-  /baggage/unload/{aircraft_id}:
-    get:
-      summary: Получить состояние выгрузки багажа по номеру самолёта
-      parameters:
-        - name: aircraft_id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Идентификатор самолета
-      responses:
-        '200':
-          description: Успешный запрос
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  flight_id:
-                    type: string
-                  status:
-                    type: string
-                    enum: ["Ожидание свободных машин", "Багаж в пути к самолету", "Выгрузка багажа", "Выгрузка завершена"]
-                    description: Состояние багажа
-        '400':
+paths: 
+  /baggage/unload/{aircraft_id}: 
+    get: 
+      summary: Получить состояние выгрузки багажа по номеру самолёта 
+      parameters: 
+        - name: aircraft_id 
+          in: path 
+          required: true 
+          schema: 
+            type: string 
+          description: Идентификатор самолета 
+      responses: 
+        '200': 
+          description: Успешный запрос 
+          content: 
+            application/json:  
+              schema: 
+                type: object 
+                properties: 
+                  flight_id: 
+                    type: string 
+                  status: 
+                    type: string 
+                    enum: ["Ожидание свободных машин", "Багаж в пути к самолету", "Выгрузка багажа", "Выгрузка завершена"] 
+                    description: Состояние багажа 
+        '400': 
+          description: Неверный запрос  
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+        '401': 
+          description: Выгрузка этого самолёта не запрашивалась  
+          content: 
+            application/json: 
+              schema: 
+                type: object  
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+        '500': 
+          description: Внутренняя ошибка сервера 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string  
+                    description: Описание ошибки 
+  /baggage/load/{aircraft_id}: 
+    get: 
+      summary: Получить состояние загрузки багажа по номеру самолёта 
+      parameters: 
+        - name: aircraft_id 
+          in: path 
+          required: true 
+          schema: 
+            type: string 
+          description: Идентификатор самолёта 
+      responses: 
+        '200': 
+          description: Успешный запрос 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  flight_id: 
+                    type: string 
+                  status:  
+                    type: string 
+                    enum: ["Ожидание свободных машин", "Багаж в пути к самолету", "Загрузка багажа", "Загрузка завершена"] 
+                    description: Состояние багажа 
+        '400': 
+          description: Неверный запрос  
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+        '401': 
+          description: Загрузка этого самолёта не запрашивалась  
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+        '500': 
+          description: Внутренняя ошибка сервера 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+  /baggage/load: 
+    post: 
+      summary: Запрос на загрузку багажа 
+      requestBody: 
+        required: true 
+        content: 
+          application/json: 
+            schema: 
+              type: object 
+              required: 
+                - aircraft_id 
+                - baggage_weight 
+                - aircraft coordinates 
+              properties: 
+                aircraft_id: 
+                  type: string 
+                  description: Идентификатор самолёта 
+                baggage_weight: 
+                  type: number 
+                  format: float 
+                  description: Количество багажа пассажиров (в кг) 
+                aircraft coordinates: 
+                  type: number 
+                  format: integer 
+                  description: Координаты самолёта 
+      responses: 
+        '200': 
+          description: Успешный запрос 
+        '400': 
           description: Неверный запрос 
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
-        '401':
-          description: Выгрузка этого самолёта не запрашивалась 
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
-        '500':
-          description: Внутренняя ошибка сервера
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
-  /baggage/load/{aircraft_id}:
-    get:
-      summary: Получить состояние загрузки багажа по номеру самолёта
-      parameters:
-        - name: aircraft_id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Идентификатор самолёта
-      responses:
-        '200':
-          description: Успешный запрос
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  flight_id:
-                    type: string
-                  status:
-                    type: string
-                    enum: ["Ожидание свободных машин", "Багаж в пути к самолету", "Загрузка багажа", "Загрузка завершена"]
-                    description: Состояние багажа
-        '400':
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+        '500': 
+          description: Ошибка на стороне сервера 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+  /baggage/upload: 
+    post: 
+      summary: Запрос на выгрузку багажа 
+      requestBody: 
+        required: true 
+        content: 
+          application/json: 
+            schema: 
+              type: object 
+              required: 
+                - aircraft_id 
+                - baggage_weight 
+                - aircraft coordinates 
+              properties: 
+                aircraft_id: 
+                  type: string 
+                  description: Идентификатор самолёта 
+                baggage_weight: 
+                  type: number 
+                  format: float 
+                  description: Количество багажа на самолёте (в кг) 
+                aircraft coordinates: 
+                  type: number 
+                  format: integer 
+                  description: Координаты самолёта 
+      responses: 
+        '200': 
+          description: Успешный запрос 
+        '400': 
           description: Неверный запрос 
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
-        '401':
-          description: Загрузка этого самолёта не запрашивалась 
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
-        '500':
-          description: Внутренняя ошибка сервера
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
-  /baggage/load:
-    post:
-      summary: Запрос на загрузку багажа
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - aircraft_id
-                - baggage_weight
-                - aircraft coordinates
-              properties:
-                aircraft_id:
-                  type: string
-                  description: Идентификатор самолёта
-                baggage_weight:
-                  type: number
-                  format: float
-                  description: Количество багажа пассажиров (в кг)
-                aircraft coordinates:
-                  type: number
-                  format: integer
-                  description: Координаты самолёта
-      responses:
-        '200':
-          description: Успешный запрос
-        '400':
-          description: Неверный запрос
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
-        '500':
-          description: Ошибка на стороне сервера
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
-  /baggage/upload:
-    post:
-      summary: Запрос на выгрузку багажа
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - aircraft_id
-                - baggage_weight
-                - aircraft coordinates
-              properties:
-                aircraft_id:
-                  type: string
-                  description: Идентификатор самолёта
-                baggage_weight:
-                  type: number
-                  format: float
-                  description: Количество багажа на самолёте (в кг)
-                aircraft coordinates:
-                  type: number
-                  format: integer
-                  description: Координаты самолёта
-      responses:
-        '200':
-          description: Успешный запрос
-        '400':
-          description: Неверный запрос
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
-        '500':
-          description: Ошибка на стороне сервера
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Описание ошибки
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+        '500': 
+          description: Ошибка на стороне сервера 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
 
 
 
@@ -226,18 +226,18 @@ paths:
 
 
 
-  /baggage/settings:
-    post:
-      summary: Обновить настройки (вместимость одной машины багажа)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                capacity:
-                  type: integer
-      responses:
-        '200':
-          description: Настройки обновлены
+  /baggage/settings: 
+    post: 
+      summary: Обновить настройки (вместимость одной машины багажа) 
+      requestBody: 
+        required: true 
+        content: 
+          application/json: 
+            schema: 
+              type: object 
+              properties: 
+                capacity: 
+                  type: integer 
+      responses: 
+        '200': 
+          description: Настройки обновлены 
