@@ -3,12 +3,22 @@ info:
   title: Ground Control API
   version: 1.0.0
   description: API для управления движением транспорта.
+  
+tags:
+  - name: map
+    description: "Управление картой"
+  - name: moving
+    description: "Управление передвижением"
+  - name: airplane
+    description: "Управление обслуживанием самолета"
 
 paths:
   /map:
     get:
       summary: Получить карту аэропорта
       description: Возвращает полную карту аэропорта в виде графа.
+      tags:
+        - map
       responses:
         '200':
           description: Успешный запрос
@@ -33,6 +43,8 @@ paths:
     post:
       summary: Добавить узел на карту
       description: Добавляет новый узел на карту аэропорта.
+      tags:
+        - map
       requestBody:
         required: true
         content:
@@ -53,6 +65,8 @@ paths:
     post:
       summary: Добавить ребро на карту
       description: Добавляет новое ребро между узлами на карте аэропорта.
+      tags:
+        - map
       requestBody:
         required: true
         content:
@@ -73,6 +87,8 @@ paths:
     post:
       summary: Запросить маршрут
       description: Запрашивает маршрут из точки А в точку Б.
+      tags:
+        - moving
       requestBody:
         required: true
         content:
@@ -110,6 +126,8 @@ paths:
     post:
       summary: Запросить разрешение на перемещение
       description: Запрашивает разрешение на перемещение из одного узла в другой.
+      tags:
+        - moving
       requestBody:
         required: true
         content:
@@ -166,6 +184,8 @@ paths:
     post:
       summary: Уведомить о прибытии в узел
       description: Уведомляет вышку о прибытии транспорта в узел.
+      tags:
+        - moving
       requestBody:
         required: true
         content:
@@ -195,10 +215,12 @@ paths:
         '400':
           description: Неверные данные запроса
           
-  /spawn-vehicle:
+  /register-vehicle:
     post:
-      summary: Получить узел, в котором заспавнился транспорт
-      description: В зависимости от типа транспорта отдает нужную начальную точку.
+      summary: Регистрация транспорта на карте
+      description: В зависимости от типа транспорта отдает нужную начальную точку и id
+      tags:
+        - moving
       requestBody:
         required: true
         content:
@@ -228,14 +250,92 @@ paths:
                   nodeId:
                     type: string
                     description: ID узла
+                  vehicleId:
+                    type: string
+                    description: ID транспорта
                 required:
                   - nodeId
+                  - vehicleId
               example:
                 nodeId: "node2"
+                vehicleId: "fuel_1"
         '400':
           description: Неверные данные запроса
         '403':
           description: Нет свободного узла
+          
+  /airplane/{id}/parking:
+    get:
+      summary: Получение свободного места парковки для самолета
+      description: В зависимости от загрузки парковок отдает нужный узел
+      tags:
+        - airplane
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID самолета
+      responses:
+        '200':
+          description: Id узла парковочного места
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nodeId:
+                    type: string
+                    description: ID узла
+                required:
+                  - nodeId
+              example:
+                nodeId: "node3"
+        '400':
+          description: Неверные данные запроса
+        '403':
+          description: Нет свободного узла
+          
+  /airplane/{id}/service/{type}:
+    get:
+      summary: Получение места для обслуживания самолета
+      description: В зависимости от типа транспорта отдает нужный узел для парковки
+      tags:
+        - airplane
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID самолета
+        - name: type
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/VehicleType'
+          description: Тип транспорта
+      responses:
+        '200':
+          description: Id узла места для обслуживания
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nodeId:
+                    type: string
+                    description: ID узла
+                required:
+                  - nodeId
+              example:
+                nodeId: "node3"
+        '400':
+          description: Неверные данные запроса
+        '403':
+          description: Нет свободного узла
+      
 
 components:
   schemas:
@@ -264,9 +364,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VehicleType'
-        isInitial:
-          type: boolean
-          description: Может ли узел являться начальной точкой транспорта
       required:
         - id
         - types
