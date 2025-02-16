@@ -105,8 +105,7 @@ components:
       properties:
         NodeId:
           type: string
-          format: uuid
-          description: Идентификатор узла самолета.
+          description: Идентификатор узла самолета (например, "node1").
       required:
         - NodeId
 
@@ -115,8 +114,7 @@ components:
       properties:
         NodeId:
           type: string
-          format: uuid
-          description: Идентификатор узла самолета.
+          description: Идентификатор узла самолета (например, "node1").
       required:
         - NodeId
 
