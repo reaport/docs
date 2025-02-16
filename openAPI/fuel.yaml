@@ -1,1 +1,100 @@
-openapi: 3.0.3
+openapi: 3.0.0
+info:
+  title: Fuel API
+  description: |
+    API для управления процессом заправки самолётов топливом. Для подробной информации смотрите [документацию](https://docs.google.com/document/d/1-A99pLnf-T3KJgUowspAIestsUUSzbDQ0Sfr5KvSmdI/edit?tab=t.g0yqyiv1tqaa).
+  version: 1.0.0
+
+paths:
+  /fuel_api/request:
+    post:
+      summary: Запрос заправки
+      description: |
+        После высадки пассажиров оркестратор отправляет запрос на заправку.
+        Если количество топлива меньше 0, его значение обрабатывается как 0, и заправка не требуется.
+      operationId: RequestRefueling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestRefuelingInput'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestRefuelingResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    Status: "success"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestRefuelingErrorResponse'
+              examples:
+                MissingNodeId:
+                  value:
+                    errorCode: 100
+                    message: "NodeId is required"
+                MissingFuelNeeded:
+                  value:
+                    errorCode: 101
+                    message: "FuelNeeded is required"
+                InvalidFuelAmount:
+                  value:
+                    errorCode: 102
+                    message: "FuelNeeded must be a non-negative integer"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestRefuelingErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+components:
+  schemas:
+    RequestRefuelingInput:
+      type: object
+      properties:
+        NodeId:
+          type: string
+          format: uuid
+          description: Идентификатор узла самолета.
+        FuelNeeded:
+          type: integer
+          description: Количество топлива, необходимое для заправки (в литрах). Может быть 0 или больше.
+      required:
+        - NodeId
+        - FuelNeeded
+
+    RequestRefuelingResponse:
+      type: object
+      properties:
+        Status:
+          type: string
+          description: Сообщение о получении информации.
+      required:
+        - Status
+
+    RequestRefuelingErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки.
+        message:
+          type: string
+          description: Сообщение об ошибке.
+      required:
+        - errorCode
+        - message
