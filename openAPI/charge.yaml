@@ -1,1 +1,143 @@
 openapi: 3.0.0
+info:
+  title: Charge API
+  description: |
+    API для управления процессом зарядки самолетов. Для подробной информации смотрите [документацию](https://docs.google.com/document/d/1-A99pLnf-T3KJgUowspAIestsUUSzbDQ0Sfr5KvSmdI/edit?tab=t.7lbm2zu22odb).
+  version: 1.0.0
+
+paths:
+  /charge_api/request:
+    post:
+      summary: Запрос на зарядку
+      description: |
+        Когда самолет на парковочном месте, оркестратор отправляет запрос на зарядку.
+      operationId: RequestCharging
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargingRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    Status: "success"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
+              examples:
+                MissingNodeId:
+                  value:
+                    errorCode: 100
+                    message: "NodeId is required"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+  /charge_api/complete:
+    post:
+      summary: Завершение зарядки
+      description: |
+        Оркестратор отправляет запрос на прекращение зарядки, когда кейтеринг выполнен.
+      operationId: CompleteCharging
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargingCompletionRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    Status: "success"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
+              examples:
+                MissingNodeId:
+                  value:
+                    errorCode: 100
+                    message: "NodeId is required"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+components:
+  schemas:
+    ChargingRequest:
+      type: object
+      properties:
+        NodeId:
+          type: string
+          format: uuid
+          description: Идентификатор узла самолета.
+      required:
+        - NodeId
+
+    ChargingCompletionRequest:
+      type: object
+      properties:
+        NodeId:
+          type: string
+          format: uuid
+          description: Идентификатор узла самолета.
+      required:
+        - NodeId
+
+    ChargingResponse:
+      type: object
+      properties:
+        Status:
+          type: string
+          description: Сообщение о получении информации.
+      required:
+        - Status
+
+    ChargingErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки.
+        message:
+          type: string
+          description: Сообщение об ошибке.
+      required:
+        - errorCode
+        - message
