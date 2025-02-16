@@ -1,0 +1,231 @@
+openapi: 3.0.0
+info:
+  title: Dashboard API
+  description: |
+    API для управления отображением рейсов в табло аэропорта. 
+  version: 1.0.0
+
+paths:
+  /registration:
+    post:
+      summary: Обновление информации о регистрации
+      description: |
+        Метод для передачи информации о рейсах, на которые открыта регистрация.
+      operationId: UpdateRegistrationInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightRegistrationInput'
+      responses:
+        '200':
+          description: Успешное обновление информации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightRegistrationResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    status: "success"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightRegistrationErrorResponse'
+              examples:
+                MissingFlightNumber:
+                  value:
+                    errorCode: 100
+                    message: "FlightNumber is required"
+                InvalidFlightNumber:
+                  value:
+                    errorCode: 101
+                    message: "Invalid FlightNumber"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+  /ticket-purchase:
+    post:
+      summary: Информирование о покупке билетов
+      description: |
+        Метод для передачи информации о рейсах, на которые открыта покупка билетов.
+      operationId: InformTicketPurchase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketPurchaseInput'
+      responses:
+        '200':
+          description: Успешная передача информации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketPurchaseResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    status: "success"
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                MissingFlightNumber:
+                  value:
+                    errorCode: 100
+                    message: "FlightNumber is required"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+  /start:
+    post:
+      summary: Уведомление о начале рейса
+      description: Уведомление оркестратора о начале рейса. 
+      operationId: NotifyFlightStart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightStartInput'
+      responses:
+        '200':
+          description: Успешное уведомление
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                SuccessfulNotification:
+                  value:
+                    status: "success"
+                    message: "Flight update notification sent successfully."
+        '400':
+          description: Ошибка запроса
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                examples:
+                  InvalidFlightNumber:
+                    value:
+                      errorCode: 101
+                      message: "Invalid flight number provided."
+                  MissingRequiredField:
+                    value:
+                      errorCode: 102
+                      message: "Required field 'flightNumber' is missing."
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+components:
+  schemas:
+    FlightRegistrationInput:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          description: Номер рейса для открытия регистрации.
+      required:
+        - flightNumber
+
+    FlightRegistrationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус выполнения операции.
+      required:
+        - status
+
+    TicketPurchaseInput:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          description: Номер рейса, на который открыта продажа билетов.
+      required:
+        - flightNumber
+
+    TicketPurchaseResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус выполнения операции.
+      required:
+        - status
+
+    FlightStartInput:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          description: Номер рейса, уведомляющий о его начале.
+        startTime:
+          type: string
+          format: date-time
+          description: Время начала рейса.
+      required:
+        - flightNumber
+        - startTime
+
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус выполнения действия.
+        message:
+          type: string
+          description: Сообщение, подтверждающее успешное выполнение действия.
+      required:
+        - status
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки.
+        message:
+          type: string
+          description: Сообщение об ошибке.
+      required:
+        - errorCode
+        - message
