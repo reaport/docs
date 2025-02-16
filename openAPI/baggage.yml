@@ -43,7 +43,7 @@ paths:
                 type: object 
                 properties: 
                   waiting: 
-                    type: bool
+                    type: boolean
                     description: true, если свободных машин нет, иначе false
         '400': 
           description: Неверный запрос 
@@ -99,7 +99,7 @@ paths:
                 type: object 
                 properties: 
                   waiting: 
-                    type: bool
+                    type: boolean
                     description: true, если свободных машин нет, иначе false
         '400': 
           description: Неверный запрос 
