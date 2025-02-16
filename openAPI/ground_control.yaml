@@ -19,6 +19,7 @@ paths:
       description: Возвращает полную карту аэропорта в виде графа.
       tags:
         - map
+      operationId: map_getAirportMap
       responses:
         '200':
           description: Успешный запрос
@@ -45,6 +46,7 @@ paths:
       description: Добавляет новый узел на карту аэропорта.
       tags:
         - map
+      operationId: map_addNode
       requestBody:
         required: true
         content:
@@ -67,6 +69,7 @@ paths:
       description: Добавляет новое ребро между узлами на карте аэропорта.
       tags:
         - map
+      operationId: map_addEdge
       requestBody:
         required: true
         content:
@@ -89,6 +92,7 @@ paths:
       description: Запрашивает маршрут из точки А в точку Б.
       tags:
         - moving
+      operationId: moving_getRoute
       requestBody:
         required: true
         content:
@@ -128,6 +132,7 @@ paths:
       description: Запрашивает разрешение на перемещение из одного узла в другой.
       tags:
         - moving
+      operationId: moving_requestMove
       requestBody:
         required: true
         content:
@@ -186,6 +191,7 @@ paths:
       description: Уведомляет вышку о прибытии транспорта в узел.
       tags:
         - moving
+      operationId: moving_notifyArrival
       requestBody:
         required: true
         content:
@@ -221,6 +227,7 @@ paths:
       description: В зависимости от типа транспорта отдает нужную начальную точку и id
       tags:
         - moving
+      operationId: moving_registerVehicle
       requestBody:
         required: true
         content:
@@ -270,6 +277,7 @@ paths:
       description: В зависимости от загрузки парковок отдает нужный узел
       tags:
         - airplane
+      operationId: airplane_getParkingSpot
       parameters:
         - name: id
           in: path
@@ -303,6 +311,7 @@ paths:
       description: В зависимости от типа транспорта отдает нужный узел для парковки
       tags:
         - airplane
+      operationId: airplane_getServiceSpot
       parameters:
         - name: id
           in: path
@@ -367,7 +376,6 @@ components:
       required:
         - id
         - types
-        - isInitial
 
     Edge:
       type: object
@@ -388,5 +396,5 @@ components:
         
     VehicleType:
       type: string
-      enum: [airplane, catering, refueling, cleaning, baggage, follow-me]
+      enum: [airplane, catering, refueling, cleaning, baggage, follow-me, charging, bus, ramp]
       description: Тип транспорта
