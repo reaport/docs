@@ -9,7 +9,7 @@ servers:
     description: Local server
 
 paths:
-  /passengers/register:
+  /register/passengers:
     post:
       summary: Регистрация пассажира
       description: Получение от модуля генерации пассажиров человека для регистрации.
@@ -23,21 +23,34 @@ paths:
         '200':
           description: Успешная регистрация
         '400':
-          description: Неверный запрос (ошибка валидации)
+          description: Неверный запрос
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "Validation error"
+              examples:
+                validError:
+                  value:
+                    error: "Validation error"
+                wrongFood:
+                  value:
+                    error: "Wrong type of food"
+                wrongBaggage:
+                  value:
+                    error: "Exceeding the allowed baggage size"
         '403':
-          description: Регистрация не открыта
+          description: Регистрация не доступна
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "Registration is not open"
+              examples:
+                registerNotOpen:
+                  value:
+                    error: "Registration is not open"
+                registerClose:
+                  value:
+                    error: "Flight check-in is closed"
         '404':
           description: Пассажир не найден
           content:
@@ -46,30 +59,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: "The passenger was not found"
-        '410':
-          description: Регистрация на рейс закрыта
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "Flight check-in is closed"
-        '422':
-          description: Неверный тип питания
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "Wrong type of food"
-        '423':
-          description: Превышение допустимого размера багажа
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "Exceeding the allowed baggage size"
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -79,7 +68,7 @@ paths:
               example:
                 error: "Internal server error"
 
-  /flights/register:
+  /register/flights:
     post:
       summary: Открытие регистрации на рейс
       description: Получение от модуля табло информации о рейсах, доступных для регистрации.
