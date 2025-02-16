@@ -1,0 +1,167 @@
+openapi: 3.0.0
+info:
+  title: Catering API
+  description: |
+    API для управления процессом доставки питания для рейсов. 
+    После завершения регистрации и выгрузки пассажиров/багажа оркестратор инициирует доставку питания.
+  version: 1.0.0
+
+paths:
+  /catering_api/request:
+    post:
+      summary: Запрос на доставку питания
+      description: |
+        После завершения регистрации и выгрузки пассажиров/багажа оркестратор отправляет запрос на начало доставки питания.
+      operationId: RequestCatering
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CateringRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CateringResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    Status: "success"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CateringErrorResponse'
+              examples:
+                MissingFlightId:
+                  value:
+                    errorCode: 101
+                    message: "FlightId is required"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CateringErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+  /catering_api/complete:
+    post:
+      summary: Завершение доставки питания
+      description: |
+        По завершении доставки питания кейтеринговая машина отправляет уведомление о завершении процесса.
+      operationId: CompleteCatering
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CateringCompletionRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CateringResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    Status: "success"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CateringErrorResponse'
+              examples:
+                MissingFlightId:
+                  value:
+                    errorCode: 101
+                    message: "FlightId is required"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CateringErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+components:
+  schemas:
+    CateringRequest:
+      type: object
+      properties:
+        FlightId:
+          type: string
+          format: uuid
+          description: Идентификатор рейса.
+        FoodOrder:
+          type: array
+          items:
+            $ref: '#/components/schemas/FoodItem'
+          description: Список заказанных блюд с указанием типа и количества.
+      required:
+        - FlightId
+        - FoodOrder
+
+    FoodItem:
+      type: object
+      properties:
+        MealType:
+          type: string
+          description: Тип блюда (например, стандарт, вегетарианский, детский).
+        Quantity:
+          type: integer
+          description: Количество порций данного типа.
+      required:
+        - MealType
+        - Quantity
+
+    CateringCompletionRequest:
+      type: object
+      properties:
+        FlightId:
+          type: string
+          format: uuid
+          description: Идентификатор рейса.
+        DeliveryTime:
+          type: integer
+          description: Время доставки в секундах.
+      required:
+        - FlightId
+        - DeliveryTime
+
+    CateringResponse:
+      type: object
+      properties:
+        Status:
+          type: string
+          description: Сообщение о получении уведомления.
+      required:
+        - Status
+
+    CateringErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки.
+        message:
+          type: string
+          description: Сообщение об ошибке.
+      required:
+        - errorCode
+        - message
