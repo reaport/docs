@@ -1,0 +1,186 @@
+openapi: 3.0.0
+info:
+  title: Cleaning API
+  description: |
+    API для управления процессом очистки самолётов. 
+    Модуль очистки работает параллельно с кейтерингом и отвечает за очистку салона и заправку водой.
+  version: 1.0.0
+
+paths:
+  /request:
+    post:
+      summary: Запрос на очистку
+      description: |
+        После высадки пассажиров оркестратор отправляет запрос на очистку самолета.
+        Запрос включает информацию о необходимой очистке и заправке водой.
+      operationId: RequestCleaning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCleaningInput'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestCleaningResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    status: "success"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestCleaningErrorResponse'
+              examples:
+                MissingFlightNumber:
+                  value:
+                    errorCode: 100
+                    message: "FlightNumber is required"
+                InvalidWaterAmount:
+                  value:
+                    errorCode: 101
+                    message: "WaterAmount must be a non-negative integer"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestCleaningErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+  /complete:
+    post:
+      summary: Уведомление о завершении очистки
+      description: |
+        Клининговая машина отправляет запрос о завершении наполнения бака водой и окончания очистки.
+      operationId: NotifyCleaningCompletion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotifyCleaningCompletionInput'
+      responses:
+        '200':
+          description: Успешное уведомление
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyCleaningCompletionResponse'
+              examples:
+                SuccessfulCompletion:
+                  value:
+                    status: "success"
+                    message: "Cleaning and water refill completed successfully."
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyCleaningErrorResponse'
+              examples:
+                MissingFlightNumber:
+                  value:
+                    errorCode: 200
+                    message: "FlightNumber is required"
+                InvalidStatus:
+                  value:
+                    errorCode: 201
+                    message: "Status must be 'completed' or 'failed'"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyCleaningErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+components:
+  schemas:
+    RequestCleaningInput:
+      type: object
+      properties:
+        FlightNumber:
+          type: string
+          description: Номер рейса, для которого требуется очистка.
+        WaterAmount:
+          type: integer
+          description: Количество воды, необходимое для заправки (0 или больше).
+      required:
+        - FlightNumber
+        - WaterAmount
+
+    RequestCleaningResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус выполнения операции.
+      required:
+        - status
+
+    RequestCleaningErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки, указывающий на тип проблемы.
+        message:
+          type: string
+          description: Сообщение об ошибке, предоставляющее дополнительные детали.
+      required:
+        - errorCode
+        - message
+
+    NotifyCleaningCompletionInput:
+      type: object
+      properties:
+        FlightNumber:
+          type: string
+          description: Номер рейса, для которого закончена очистка.
+        Status:
+          type: string
+          description: Статус завершения очистки.
+      required:
+        - FlightNumber
+        - Status
+
+    NotifyCleaningCompletionResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус выполнения уведомления.
+        message:
+          type: string
+          description: Сообщение о выполнении операции.
+      required:
+        - status
+        - message
+
+    NotifyCleaningErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки.
+        message:
+          type: string
+          description: Сообщение об ошибке.
+      required:
+        - errorCode
+        - message
