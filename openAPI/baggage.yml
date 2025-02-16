@@ -35,7 +35,7 @@ paths:
                   format: integer 
                   description: Координаты самолёта 
       responses: 
-        '200': 
+        '204': 
           description: Успешный запрос 
         '400': 
           description: Неверный запрос 
@@ -83,7 +83,7 @@ paths:
                   format: integer 
                   description: Координаты самолёта 
       responses: 
-        '200': 
+        '204': 
           description: Успешный запрос 
         '400': 
           description: Неверный запрос 
