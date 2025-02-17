@@ -6,7 +6,7 @@ info:
   version: 1.0.0
 
 paths:
-  /charge_api/request:
+  /request:
     post:
       summary: Запрос на зарядку
       description: |
@@ -52,7 +52,7 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
-  /charge_api/complete:
+  /complete:
     post:
       summary: Завершение зарядки
       description: |
