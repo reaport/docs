@@ -102,56 +102,6 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
-  /start:
-    post:
-      summary: Уведомление о начале рейса
-      description: Уведомление оркестратора о начале рейса. 
-      operationId: NotifyFlightStart
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FlightStartInput'
-      responses:
-        '200':
-          description: Успешное уведомление
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-              examples:
-                SuccessfulNotification:
-                  value:
-                    status: "success"
-                    message: "Flight update notification sent successfully."
-        '400':
-          description: Ошибка запроса
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ErrorResponse'
-                examples:
-                  InvalidFlightNumber:
-                    value:
-                      errorCode: 101
-                      message: "Invalid flight number provided."
-                  MissingRequiredField:
-                    value:
-                      errorCode: 102
-                      message: "Required field 'flightNumber' is missing."
-        '500':
-          description: Внутренняя ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                InternalServerError:
-                  value:
-                    errorCode: 500
-                    message: "InternalServerError"
-
 components:
   schemas:
     FlightRegistrationInput:
