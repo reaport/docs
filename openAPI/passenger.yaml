@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Passenger
+  version: '1.0'
+servers:
+  - url: https://passenger.reaport.ru/v1
+paths:
+  /{uuid}:
+    get:
+      description: Поиск пассажира по UUID
+      parameters:
+        - in: path
+          name: uuid
+          required: true
+          schema:
+            type: string
+            format: uuid
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/passenger"
+        '404':
+          description: Passenger not found
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+
+    passenger:
+      type: object
+      properties:
+
+        uuid:
+          type: string
+          format: uuid
+          description: UUID пассажира.
+
+        mealPreference:
+          description: Гастрономические предпочтения пассажира.
+          oneOf:
+            - type: string
+              description: Пассажир берет только один тип питания
+            - type: array
+              description: Пассажир может выбрать из нескольких типов
+              items:
+                type: string
+
+        baggageWeight:
+          description: Вес багажа пассажира
+          type: number
+          format: float
+          minimum: 0
+        
+        ticketId:
+          description: Идентификатор билета, купленного пассажиром
+          type: string
+          format: uuid
+          nullable: true
+
+        status:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/passengerStatus"
+
+    passengerStatus:
+      description: Состояние пассажира
+      type: string
+      enum: ['asd','asfgf']
