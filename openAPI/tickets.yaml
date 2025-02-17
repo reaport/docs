@@ -1,0 +1,265 @@
+openapi: 3.0.0
+info:
+  title: API для модуля покупки и возврата билетов
+  version: "1.0.0"
+  description: >
+    Этот API обеспечивает функциональность покупки и возврата билетов.
+    Модуль принимает запросы от клиентов, валидирует входные данные, проверяет наличие мест на рейсе,
+    резервирует место и генерирует билет. Вся информация о купленных билетах передается исключительно
+    модулю регистрации для дальнейшей обработки.
+    
+tags:
+  - name: tickets
+    description: "Эндпоинты для покупки, возврата и получения информации о билетах"
+
+paths:
+  /buy:
+    post:
+      tags:
+        - tickets
+      summary: Покупка билета
+      description: |
+        Позволяет приобрести билет на выбранный рейс.
+        В запросе передаются:
+          - Идентификатор пассажира (passengerId)
+          - Идентификатор рейса (flightId)
+          - Выбранный класс обслуживания (seatClass)
+          - Тип питания (mealOption) – выбор "да" означает, что питание выбрано, "нет" – не выбрано.
+          - Параметры багажа (если имеются: вес и количество)
+        После успешного резервирования места создаётся билет с уникальным ticketId.
+        Информация о покупке передается исключительно модулю регистрации.
+      operationId: buyTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passengerId:
+                  type: string
+                  description: Уникальный идентификатор пассажира.
+                flightId:
+                  type: string
+                  description: Идентификатор рейса, на который покупается билет.
+                seatClass:
+                  type: string
+                  enum: [economy, business]
+                  description: Выбранный класс обслуживания.
+                mealOption:
+                  type: string
+                  enum: [да, нет]
+                  description: Тип питания, выбранный пассажиром (да – питание выбрано, нет – питание не выбрано).
+                baggage:
+                  type: object
+                  description: Параметры багажа (если пассажир сдаёт багаж).
+                  properties:
+                    weight:
+                      type: number
+                      format: float
+                      description: Вес багажа в килограммах.
+                    count:
+                      type: integer
+                      description: Количество единиц багажа.
+              required:
+                - passengerId
+                - flightId
+                - seatClass
+                - mealOption
+      responses:
+        '200':
+          description: Билет успешно куплен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                    description: Уникальный идентификатор созданного билета.
+                  status:
+                    type: string
+                    description: Статус операции (например, "success").
+        '400':
+          description: Ошибка в запросе или отсутствуют доступные места.
+
+  /cancel/{ticketId}:
+    post:
+      tags:
+        - tickets
+      summary: Отмена (возврат) билета
+      description: |
+        Позволяет вернуть ранее купленный билет по его идентификатору.
+        Возврат билета возможен только до начала регистрации.
+        Если регистрация уже началась, функция возврата закрыта, и запрос вернет ошибку.
+        Модуль проверяет условия возврата.
+        При успешном возврате билет помечается как "отменён" и информация передается модулю регистрации.
+      operationId: cancelTicket
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор билета, подлежащего возврату.
+      responses:
+        '200':
+          description: Билет успешно возвращён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                  status:
+                    type: string
+                    description: Статус операции (например, "returned").
+        '403':
+          description: Возврат невозможен, так как регистрация уже началась.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Сообщение об ошибке.
+              example:
+                error: "Возврат билета невозможен: регистрация уже началась."
+        '404':
+          description: Билет не найден.
+
+  /{ticketId}/status:
+    get:
+      tags:
+        - tickets
+      summary: Получение статуса билета
+      description: |
+        Возвращает текущий статус билета ("куплен", "отменён", "зарегистрирован").
+      operationId: getTicketStatus
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор билета.
+      responses:
+        '200':
+          description: Статус билета успешно получен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                  status:
+                    type: string
+                    description: Текущий статус билета.
+        '404':
+          description: Билет не найден.
+
+  /{ticketId}/details:
+    get:
+      tags:
+        - tickets
+      summary: Получение деталей билета
+      description: |
+        Возвращает подробную информацию о билете, включая:
+          - Идентификаторы пассажира и рейса
+          - Выбранный класс и тип питания
+          - Данные о багаже (если имеются)
+          - Текущий статус билета
+      operationId: getTicketDetails
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор билета.
+      responses:
+        '200':
+          description: Детали билета успешно получены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                  passengerId:
+                    type: string
+                  flightId:
+                    type: string
+                  seatClass:
+                    type: string
+                  mealOption:
+                    type: string
+                    enum: [да, нет]
+                  baggage:
+                    type: object
+                    properties:
+                      weight:
+                        type: number
+                        format: float
+                      count:
+                        type: integer
+                  status:
+                    type: string
+        '404':
+          description: Билет не найден.
+
+  /flight/{flightId}/passengers:
+    get:
+      tags:
+        - tickets
+      summary: Получить список пассажиров по рейсу для регистрации
+      description: |
+        Этот метод предназначен для использования модулем Регистрации.
+        Позволяет получить список всех пассажиров, купивших билет на указанный рейс,
+        учитывая только билеты со статусом "куплен" (без учета тех, кто вернул билеты).
+        В ответе возвращаются:
+          - UUID пассажира (passengerId)
+          - Тип питания (mealOption)
+          - Класс обслуживания (seatClass)
+      operationId: getPassengersForFlight
+      parameters:
+        - name: flightId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: UUID рейса, для которого запрашиваются данные о пассажирах.
+      responses:
+        '200':
+          description: Список пассажиров успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    passengerId:
+                      type: string
+                      description: UUID пассажира.
+                    mealOption:
+                      type: string
+                      enum: [да, нет]
+                      description: Выбранный тип питания.
+                    seatClass:
+                      type: string
+                      enum: [economy, business]
+                      description: Класс обслуживания.
+              example:
+                - passengerId: "uuid-1234"
+                  mealOption: "да"
+                  seatClass: "business"
+                - passengerId: "uuid-5678"
+                  mealOption: "нет"
+                  seatClass: "economy"
+        '404':
+          description: Рейс не найден или билеты отсутствуют.
