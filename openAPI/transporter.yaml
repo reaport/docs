@@ -1,0 +1,120 @@
+openapi: 3.0.0
+info:
+  title: Transporter API
+  version: 1.0.0
+  description: API для управления посадкой и высадкой пассажиров для аэропорта
+
+paths:
+  /transporter/board:
+    post:
+      summary: Запрос на посадку пассажиров
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transporter_id
+                - passenger_count
+                - vehicle_coordinates
+              properties:
+                transporter_id:
+                  type: string
+                  description: Идентификатор транспортного средства
+                passenger_count:
+                  type: number
+                  format: integer
+                  description: Количество пассажиров для посадки
+                vehicle_coordinates:
+                  type: number
+                  format: integer
+                  description: Координаты транспортного средства
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  waiting:
+                    type: boolean
+                    description: true, если свободных машин нет, иначе false
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Описание ошибки
+        '500':
+          description: Ошибка на стороне сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Описание ошибки
+
+  /transporter/disembark:
+    post:
+      summary: Запрос на высадку пассажиров
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transporter_id
+                - passenger_count
+                - vehicle_coordinates
+              properties:
+                transporter_id:
+                  type: string
+                  description: Идентификатор транспортного средства
+                passenger_count:
+                  type: number
+                  format: integer
+                  description: Количество пассажиров для высадки
+                vehicle_coordinates:
+                  type: number
+                  format: integer
+                  description: Координаты транспортного средства
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  waiting:
+                    type: boolean
+                    description: true, если свободных машин нет, иначе false
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Описание ошибки
+        '500':
+          description: Ошибка на стороне сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Описание ошибки
