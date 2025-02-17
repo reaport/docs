@@ -58,57 +58,6 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
-  /complete:
-    post:
-      summary: Уведомление о завершении очистки
-      description: |
-        Клининговая машина отправляет запрос о завершении наполнения бака водой и окончания очистки.
-      operationId: NotifyCleaningCompletion
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NotifyCleaningCompletionInput'
-      responses:
-        '200':
-          description: Успешное уведомление
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyCleaningCompletionResponse'
-              examples:
-                SuccessfulCompletion:
-                  value:
-                    status: "success"
-                    message: "Cleaning and water refill completed successfully."
-        '400':
-          description: Неверный запрос
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyCleaningErrorResponse'
-              examples:
-                MissingFlightNumber:
-                  value:
-                    errorCode: 200
-                    message: "FlightNumber is required"
-                InvalidStatus:
-                  value:
-                    errorCode: 201
-                    message: "Status must be 'completed' or 'failed'"
-        '500':
-          description: Внутренняя ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyCleaningErrorResponse'
-              examples:
-                InternalServerError:
-                  value:
-                    errorCode: 500
-                    message: "InternalServerError"
-
 components:
   schemas:
     RequestCleaningInput:
