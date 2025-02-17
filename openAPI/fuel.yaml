@@ -6,12 +6,13 @@ info:
   version: 1.0.0
 
 paths:
-  /fuel_api/request:
+  /request:
     post:
       summary: Запрос заправки
       description: |
         После высадки пассажиров оркестратор отправляет запрос на заправку.
         Если количество топлива меньше 0, его значение обрабатывается как 0, и заправка не требуется.
+        В процессе обработки запроса производится проверка наличия свободных машин. Если свободные машины отсутствуют, возвращается соответствующая ошибка.
       operationId: RequestRefueling
       requestBody:
         required: true
@@ -49,6 +50,17 @@ paths:
                   value:
                     errorCode: 102
                     message: "FuelNeeded must be a non-negative integer"
+        '404':
+          description: Нет свободных машин
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestRefuelingErrorResponse'
+              examples:
+                NoAvailableMachines:
+                  value:
+                    errorCode: 201
+                    message: "No available fuel trucks are free to perform the refueling."
         '500':
           description: Внутренняя ошибка сервера
           content:
