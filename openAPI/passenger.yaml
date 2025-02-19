@@ -70,4 +70,4 @@ components:
     passengerStatus:
       description: Состояние пассажира
       type: string
-      enum: ['asd','asfgf']
+      enum: ['AwaitingTicket','AwaitingRegistration', 'AwaitingBoarding', 'InTransit', 'OnPlane', 'LeavingAirport']
