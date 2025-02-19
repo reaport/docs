@@ -63,11 +63,8 @@ components:
           nullable: true
 
         status:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/passengerStatus"
-
-    passengerStatus:
-      description: Состояние пассажира
-      type: string
-      enum: ['AwaitingTicket','AwaitingRegistration', 'AwaitingBoarding', 'InTransit', 'OnPlane', 'LeavingAirport']
+          type: string
+          description: Состояние пассажира
+          enum: ['AwaitingTicket','AwaitingRegistration', 'AwaitingBoarding', 'InTransit', 'OnPlane', 'LeavingAirport']
+      
+      
