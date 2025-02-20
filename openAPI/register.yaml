@@ -22,6 +22,10 @@ paths:
       responses:
         '200':
           description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterPassengerResponse'
         '400':
           description: Неверный запрос
           content:
@@ -87,6 +91,7 @@ paths:
                     flightName: "SU-1234"
                     endRegisterTime: "2023-10-15T13:30:00Z"
                     departureTime: "2023-10-15T14:30:00Z"
+                    startPlantingTime: "2023-10-15T14:10:00Z"
                     gate: "A15"
                     terminal: "D"
                     aircraft:  # Добавлена информация о самолёте
@@ -109,6 +114,7 @@ paths:
                     flightName: "SU-5678"
                     endRegisterTime: "2023-10-15T14:00:00Z"
                     departureTime: "2023-10-15T15:00:00Z"
+                    startPlantingTime: "2023-10-15T14:10:00Z"
                     gate: "B10"
                     terminal: "E"
                     aircraft:  # Добавлена информация о самолёте
@@ -172,6 +178,35 @@ components:
         baggageWeight: 23.5
         foodOnBoard: "Сет 1"
 
+    RegisterPassengerResponse:
+      type: object
+      properties:
+        flightName:
+          type: string
+          description: Название рейса
+        departureTime:
+          type: string
+          format: date-time
+          description: Время вылета
+        startPlantingTime:
+          type: string
+          format: date-time
+          description: Начало посадки
+        gate:
+          type: string
+          nullable: true
+          description: Номер выхода (гейта)
+        terminal:
+          type: string
+          nullable: true
+          description: Терминал
+      example:
+        flightName: "SU-1234"
+        departureTime: "2023-10-15T14:30:00Z"
+        startPlantingTime: "2023-10-15T14:10:00Z"
+        gate: "A15"
+        terminal: "D"
+        
     FlightStatusRequest:
       type: object
       properties:
@@ -190,6 +225,10 @@ components:
           type: string
           format: date-time
           description: Время вылета
+        startPlantingTime:
+          type: string
+          format: date-time
+          description: Начало посадки
         gate:
           type: string
           nullable: true
