@@ -31,10 +31,8 @@ paths:
                 nodes:
                   - id: "node_1"
                     types: ["airplane"]
-                    isInitial: false
                   - id: "node_2"
                     types: ["catering"]
-                    isInitial: true
                 edges:
                   - from: "node_1"
                     to: "node_2"
@@ -56,7 +54,6 @@ paths:
             example:
               id: "node_3"
               types: ["refueling"]
-              isInitial: true
       responses:
         '201':
           description: Узел успешно добавлен
@@ -361,6 +358,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VehicleType'
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
       required:
         - id
         - types
@@ -386,3 +387,15 @@ components:
       type: string
       enum: [airplane, catering, refueling, cleaning, baggage, follow-me, charging, bus, ramp]
       description: Тип транспорта
+
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор транспорта
+        type:
+          $ref: '#/components/schemas/VehicleType'
+      required:
+        - id
+        - type
