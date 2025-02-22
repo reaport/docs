@@ -9,7 +9,7 @@ servers:
     description: Production server 
 
 paths: 
-  /baggage/load: 
+  /load: 
     post: 
       summary: Запрос на загрузку багажа 
       requestBody: 
@@ -65,7 +65,7 @@ paths:
                   error: 
                     type: string 
                     description: Описание ошибки 
-  /baggage/upload: 
+  /upload: 
     post: 
       summary: Запрос на выгрузку багажа 
       requestBody: 
