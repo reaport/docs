@@ -254,8 +254,8 @@ paths:
                 vehicleId: "fuel_1"
         '400':
           description: Неверные данные запроса
-        '403':
-          description: Нет свободного узла
+        '409':
+          description: Взлетно-посадочная полоса занята
           
   /airplane/{id}/parking:
     get:
@@ -288,8 +288,8 @@ paths:
                 nodeId: "node_3"
         '400':
           description: Неверные данные запроса
-        '403':
-          description: Нет свободного узла
+        '409':
+          description: Нет свободного парковочного места для самолета
           
   /airplane/{id}/service/{type}:
     get:
@@ -327,8 +327,8 @@ paths:
                 nodeId: "node_3"
         '400':
           description: Неверные данные запроса
-        '403':
-          description: Нет свободного узла
+        '409':
+          description: Нет свободного узла для обслуживания
       
 
 components:
