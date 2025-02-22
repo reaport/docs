@@ -31,8 +31,7 @@ paths:
                   format: float 
                   description: Количество багажа пассажиров (в кг) 
                 aircraft coordinates: 
-                  type: number 
-                  format: integer 
+                  type: string
                   description: Координаты самолёта 
       responses: 
         '200': 
@@ -87,8 +86,7 @@ paths:
                   format: float 
                   description: Количество багажа на самолёте (в кг) 
                 aircraft coordinates: 
-                  type: number 
-                  format: integer 
+                  type: string
                   description: Координаты самолёта 
       responses: 
         '200': 
