@@ -101,15 +101,15 @@ paths:
                         - rowNumber: 1
                           seats:
                             - seatNumber: "1A"
-                              seatType: "VIP"
+                              seatClass: "business"
                             - seatNumber: "1B"
-                              seatType: "VIP"
+                              seatClass: "business"
                         - rowNumber: 2
                           seats:
                             - seatNumber: "2A"
-                              seatType: "standard"
+                              seatClass: "economy"
                             - seatNumber: "2B"
-                              seatType: "standard"
+                              seatClass: "economy"
                   - flightId: "b2c3d4e5-f6g7-8901-h2i3-j4k5l6m7n8o9"
                     flightName: "SU-5678"
                     endRegisterTime: "2023-10-15T14:00:00Z"
@@ -124,15 +124,15 @@ paths:
                         - rowNumber: 1
                           seats:
                             - seatNumber: "1A"
-                              seatType: "VIP"
+                              seatClass: "business"
                             - seatNumber: "1B"
-                              seatType: "VIP"
+                              seatClass: "business"
                         - rowNumber: 2
                           seats:
                             - seatNumber: "2A"
-                              seatType: "standard"
+                              seatClass: "economy"
                             - seatNumber: "2B"
-                              seatType: "standard"
+                              seatClass: "economy"
       responses:
         '200':
           description: Рейсы успешно зарегистрированы
@@ -168,15 +168,15 @@ components:
           type: number
           format: float
           description: Вес багажа (кг)
-        foodOnBoard:
+        mealOption:
           type: string
           nullable: true
-          enum: [Сет 1, Сет 2, Сет 3, Без питания]  # Тип питания как enum
+          enum: [да, нет]  # Тип питания как enum
           description: Новый тип питания
       example:
         idTraveler: "123e4567-e89b-12d3-a456-426614174000"
         baggageWeight: 23.5
-        foodOnBoard: "Сет 1"
+        mealOption: "да"
 
     RegisterPassengerResponse:
       type: object
@@ -271,10 +271,10 @@ components:
         seatNumber:
           type: string
           description: Номер места (например, "1A", "2B")
-        seatType:
+        seatClass:
           type: string
-          enum: [VIP, standard, disabled]
-          description: Тип места (VIP, обычное, для маломобильных)
+          enum: [economy, business]
+          description: Тип места (business, economy)
 
     ErrorResponse:
       type: object
