@@ -5,11 +5,11 @@ info:
   version: 1.0.0
 
 servers:
-  - url: 'http://localhost:8080/'
+  - url: 'https://register.reaport.ru/'
     description: Local server
 
 paths:
-  /register/passenger:
+  /passenger:
     post:
       summary: Регистрация пассажира
       description: Получение от модуля генерации пассажиров человека для регистрации.
@@ -72,7 +72,7 @@ paths:
               example:
                 error: "Internal server error"
 
-  /register/flights:
+  /flights:
     post:
       summary: Получение рейсов, на которые открывается регистрация
       description: Получение от модуля табло информации о рейсах, доступных для регистрации
