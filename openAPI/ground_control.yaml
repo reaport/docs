@@ -3,6 +3,10 @@ info:
   title: Ground Control API
   version: 1.0.0
   description: API для управления движением транспорта.
+
+servers:
+  - url: https://ground-control.reaport.ru
+    description: Сервер для разработки, развернутый при помощи dokploy
   
 tags:
   - name: map
