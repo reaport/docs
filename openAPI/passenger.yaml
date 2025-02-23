@@ -5,7 +5,7 @@ info:
 servers:
   - url: https://passenger.reaport.ru/v1
 paths:
-  /passengers:
+  /find:
     get:
       description: |
         Поиск пассажира по переданному параметру.
