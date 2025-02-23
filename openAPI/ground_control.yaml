@@ -107,12 +107,17 @@ paths:
                 to:
                   type: string
                   description: ID конечного узла
+                type:
+                  $ref: '#/components/schemas/VehicleType'
+                  description: Тип транспорта
               required:
                 - from
                 - to
+                - type
             example:
               from: "node_1"
               to: "node_3"
+              type: "baggage"
       responses:
         '200':
           description: Успешный запрос
