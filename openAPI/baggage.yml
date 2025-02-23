@@ -28,7 +28,7 @@ paths:
                   description: Идентификатор самолёта 
                 baggage_weight: 
                   type: number 
-                  format: float 
+                  format: double
                   description: Количество багажа пассажиров (в кг) 
                 aircraft coordinates: 
                   type: string
@@ -83,7 +83,7 @@ paths:
                   description: Идентификатор самолёта 
                 baggage_weight: 
                   type: number 
-                  format: float 
+                  format: double
                   description: Количество багажа на самолёте (в кг) 
                 aircraft coordinates: 
                   type: string
