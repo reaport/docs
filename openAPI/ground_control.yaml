@@ -344,8 +344,8 @@ paths:
                   - nodeId
               example:
                 nodeId: "node_3"
-        '400':
-          description: Неверные данные запроса
+        '404':
+          description: Самолет не найден
         '409':
           description: Нет свободного узла для обслуживания
       
