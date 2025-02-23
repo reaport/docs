@@ -184,6 +184,10 @@ paths:
                 distance: 100
         '400':
           description: Неверные данные запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Перемещение запрещено
         '404':
@@ -226,6 +230,12 @@ paths:
           description: Уведомление успешно обработано
         '400':
           description: Неверные данные запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Узел не найден
           
   /register-vehicle/{type}:
     post:
@@ -408,3 +418,17 @@ components:
       required:
         - id
         - type
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+            - VEHICLE_NOT_FOUND_IN_NODE
+            - EDGE_NOT_FOUND
+        message:
+          type: string
+          description: Описание ошибки
+      required:
+        - code
