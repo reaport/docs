@@ -3,7 +3,7 @@ info:
   title: Passenger
   version: '1.0'
 servers:
-  - url: https://passenger.reaport.ru/v1
+  - url: https://passenger.reaport.ru/v2
 paths:
   /find:
     get:
@@ -11,7 +11,8 @@ paths:
         Поиск пассажира по переданному параметру.
         **Только один из параметров (`passengerUUID` или `ticketUUID`) может быть передан. 
         Передача обоих параметров одновременно не допускается.**
-        Допускается не передавать ни одного из параметров. В этом случае будут возвращены все существующие пассажиры.
+        
+        Допускается не передавать параметры. В этом случае будут возвращены все существующие пассажиры.
       
       parameters:
         - in: query
@@ -21,7 +22,7 @@ paths:
             type: string
             format: uuid
             example: "123e4567-e89b-12d3-a456-426614174000"
-          description: Уникальный идентификатор пассажира. Не использовать одновременно с ticketUUID.
+          description: Уникальный идентификатор пассажира. Не использовать одновременно с `ticketUUID`.
 
         - in: query
           name: ticketUUID
@@ -30,7 +31,7 @@ paths:
             type: string
             format: uuid
             example: "987e6543-e21b-45d3-b654-426614179999"
-          description: Уникальный идентификатор билета. Не использовать одновременно с passengerUUID.
+          description: Уникальный идентификатор билета. Не использовать одновременно с `passengerUUID`.
 
       responses:
         '200':
@@ -44,7 +45,7 @@ paths:
                   $ref: "#/components/schemas/Passenger"
 
         '400':
-          description: "Bad request: укажите только один параметр (passengerUUID или ticketUUID)"
+          description: "Bad request: you may only pass one query parameter (`passengerUUID` или `ticketUUID`)"
 
         '404':
           description: Passenger not found
