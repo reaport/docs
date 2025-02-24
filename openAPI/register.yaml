@@ -48,13 +48,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                registerNotOpen:
-                  value:
-                    error: "Registration is not open"
-                registerClose:
-                  value:
-                    error: "Flight check-in is closed"
+              example:
+                error: "Registration is not available"
         '404':
           description: Пассажир не найден
           content:
@@ -82,30 +77,6 @@ paths:
           application/json:
             schema:
                 $ref: '#/components/schemas/FlightStatusRequest'
-            example:
-              flightId: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
-              flightName: "SU-1234"
-              endRegisterTime: "2023-10-15T13:30:00Z"
-              departureTime: "2023-10-15T14:30:00Z"
-              startPlantingTime: "2023-10-15T14:10:00Z"
-              gate: "A15"
-              terminal: "D"
-              aircraft:
-                totalRows: 30
-                totalSeatsPerRow: 6
-                rows:
-                  - rowNumber: 1
-                    seats:
-                      - seatNumber: "1A"
-                        seatClass: "business"
-                      - seatNumber: "1B"
-                        seatClass: "business"
-                  - rowNumber: 2
-                    seats:
-                      - seatNumber: "2A"
-                        seatClass: "economy"
-                      - seatNumber: "2B"
-                        seatClass: "economy"
 
       responses:
         '200':
@@ -166,35 +137,36 @@ components:
           type: string
           format: date-time
           description: Начало посадки
-        gate:
+        seat:
           type: string
-          nullable: true
-          description: Номер выхода (гейта)
-        terminal:
-          type: string
-          nullable: true
-          description: Терминал
+          description: Место в самолёте  
       example:
         flightName: "SU-1234"
         departureTime: "2023-10-15T14:30:00Z"
         startPlantingTime: "2023-10-15T14:10:00Z"
-        gate: "A15"
-        terminal: "D"
+        seat: "A2"
         
     FlightStatusRequest:
       type: object
+      required:
+        - flightId
+        - flightName
+        - endRegisterTime
+        - departureTime
+        - startPlantingTime
+        - aircraft
       properties:
         flightId:
           type: string
-          format: uuid
           description: Уникальный идентификатор рейса
+          format: uuid
         flightName:
           type: string
-          description: Название рейса
+          description: Название рейса (номер)
         endRegisterTime:
           type: string
           format: date-time
-          description: Окончание регистрации
+          description: Время окончания регистрации
         departureTime:
           type: string
           format: date-time
@@ -202,54 +174,43 @@ components:
         startPlantingTime:
           type: string
           format: date-time
-          description: Начало посадки
-        gate:
-          type: string
-          nullable: true
-          description: Номер выхода (гейта)
-        terminal:
-          type: string
-          nullable: true
-          description: Терминал
-        aircraft:  # Добавлена информация о рассадке
-          $ref: '#/components/schemas/Aircraft'
-
-    Aircraft:
-      type: object
-      properties:
-        totalRows:
-          type: integer
-          description: Общее количество рядов в самолёте
-        totalSeatsPerRow:
-          type: integer
-          description: Общее количество кресел в одном ряду
-        rows:
+          description: Время начала посадки
+        aircraft:
           type: array
+          description: Информация о местах в самолете
           items:
-            $ref: '#/components/schemas/SeatRow'
-
-    SeatRow:
+            $ref: '#/components/schemas/SeatInfo'
+      example:
+        flightId: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+        flightName: "SU-1234"
+        endRegisterTime: "2023-10-15T13:30:00Z"
+        departureTime: "2023-10-15T14:30:00Z"
+        startPlantingTime: "2023-10-15T14:10:00Z"
+        aircraft:
+          - seatNumber: "1A"
+            seatClass: "business"
+          - seatNumber: "1B"
+            seatClass: "business"
+          - seatNumber: "2A"
+            seatClass: "economy"
+          - seatNumber: "2B"
+            seatClass: "economy"      
+    SeatInfo:
       type: object
-      properties:
-        rowNumber:
-          type: integer
-          description: Номер ряда
-        seats:
-          type: array
-          items:
-            $ref: '#/components/schemas/Seat'
-
-    Seat:
-      type: object
+      required:
+        - seatNumber
+        - seatClass
       properties:
         seatNumber:
           type: string
-          description: Номер места (например, "1A", "2B")
+          description: Номер места
         seatClass:
           type: string
-          enum: [economy, business]
-          description: Тип места (business, economy)
-
+          enum:
+            - business
+            - economy
+          description: Класс места
+          
     ErrorResponse:
       type: object
       properties:
