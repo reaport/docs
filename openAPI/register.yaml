@@ -154,7 +154,7 @@ components:
         - endRegisterTime
         - departureTime
         - startPlantingTime
-        - aircraft
+        - seatsAircraft
       properties:
         flightId:
           type: string
@@ -175,7 +175,7 @@ components:
           type: string
           format: date-time
           description: Время начала посадки
-        aircraft:
+        seatsAircraft:
           type: array
           description: Информация о местах в самолете
           items:
@@ -186,7 +186,7 @@ components:
         endRegisterTime: "2023-10-15T13:30:00Z"
         departureTime: "2023-10-15T14:30:00Z"
         startPlantingTime: "2023-10-15T14:10:00Z"
-        aircraft:
+        seatsAircraft:
           - seatNumber: "1A"
             seatClass: "business"
           - seatNumber: "1B"
