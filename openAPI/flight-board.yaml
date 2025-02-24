@@ -34,7 +34,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FlightRegistrationErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse'
               examples:
                 MissingFlightNumber:
                   value:
@@ -101,6 +101,55 @@ paths:
                   value:
                     errorCode: 500
                     message: "InternalServerError"
+    /flights/update:
+    post:
+      summary: Обновление информации о рейсах
+      description: |
+        Метод для передачи информации о существующих рейсах,
+        включая даты начала продаж, регистрации и посадки.
+      operationId: UpdateFlightInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/FlightInfoInput'
+      responses:
+        '200':
+          description: Успешное обновление информации о рейсах
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    status: "success"
+                    message: "Flight information updated successfully."
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InvalidFlightData:
+                  value:
+                    errorCode: 100
+                    message: "Invalid flight data provided."
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "Internal server error occurred."
 
 components:
   schemas:
@@ -153,6 +202,30 @@ components:
       required:
         - flightNumber
         - startTime
+
+    FlightInfoInput:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          description: Номер рейса.
+        purchaseOpen:
+          type: string
+          format: date-time
+          description: Дата и время открытия продажи билетов. Может быть "Unknown".
+        registrationOpen:
+          type: string
+          format: date-time
+          description: Дата и время открытия регистрации. Может быть "Unknown".
+        boardingOpen:
+          type: string
+          format: date-time
+          description: Дата и время открытия посадки. Может быть "Unknown".
+      required:
+        - flightNumber
+        - purchaseOpen
+        - registrationOpen
+        - boardingOpen
 
     SuccessResponse:
       type: object
