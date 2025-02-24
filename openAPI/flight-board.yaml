@@ -101,13 +101,13 @@ paths:
                   value:
                     errorCode: 500
                     message: "InternalServerError"
-    /flights/update:
+
+    /boarding:
     post:
       summary: Обновление информации о рейсах
       description: |
-        Метод для передачи информации о существующих рейсах,
-        включая даты начала продаж, регистрации и посадки.
-      operationId: UpdateFlightInfo
+        Метод для передачи информации о существующих рейсах, посадки.
+      operationId: InformBoardingTime
       requestBody:
         required: true
         content:
@@ -115,10 +115,10 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/FlightInfoInput'
+                $ref: '#/components/schemas/BoardingTimeInput'
       responses:
         '200':
-          description: Успешное обновление информации о рейсах
+          description: Успешное обновление информации
           content:
             application/json:
               schema:
@@ -127,7 +127,7 @@ paths:
                 ValidRequest:
                   value:
                     status: "success"
-                    message: "Flight information updated successfully."
+                    message: "Boarding time updated successfully."
         '400':
           description: Неверный запрос
           content:
@@ -135,10 +135,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                InvalidFlightData:
+                MissingFlightNumber:
                   value:
                     errorCode: 100
-                    message: "Invalid flight data provided."
+                    message: "FlightNumber is required."
+                InvalidBoardingTime:
+                  value:
+                    errorCode: 101
+                    message: "Invalid boarding time format."
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -203,7 +207,7 @@ components:
         - flightNumber
         - startTime
 
-    FlightInfoInput:
+    BoardingTimeInput:
       type: object
       properties:
         flightNumber:
@@ -212,20 +216,10 @@ components:
         purchaseOpen:
           type: string
           format: date-time
-          description: Дата и время открытия продажи билетов. Может быть "Unknown".
-        registrationOpen:
-          type: string
-          format: date-time
-          description: Дата и время открытия регистрации. Может быть "Unknown".
-        boardingOpen:
-          type: string
-          format: date-time
-          description: Дата и время открытия посадки. Может быть "Unknown".
+          description: Дата и время открытия посадки.
       required:
         - flightNumber
-        - purchaseOpen
-        - registrationOpen
-        - boardingOpen
+        - boardingTime
 
     SuccessResponse:
       type: object
