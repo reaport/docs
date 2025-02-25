@@ -42,50 +42,48 @@ paths:
                     to: "node_2"
                     distance: 100
 
-  /map/nodes:
-    post:
-      summary: Добавить узел на карту
-      description: Добавляет новый узел на карту аэропорта.
+    put:
+      summary: Обновить карту аэропорта
+      description: Обновляет карту аэропорта.
       tags:
         - map
-      operationId: map_addNode
+      operationId: map_updateAirportMap
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Node'
+              $ref: '#/components/schemas/AirportMap'
             example:
-              id: "node_3"
-              types: ["refueling"]
+              nodes:
+                - id: "node_1"
+                  types: ["airplane"]
+                - id: "node_2"
+                  types: ["catering"]
+              edges:
+                - from: "node_1"
+                  to: "node_2"
+                  distance: 100
       responses:
-        '201':
-          description: Узел успешно добавлен
+        '200':
+          description: Успешный запрос
         '400':
-          description: Неверные данные узла
+          description: Неверные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /map/edges:
+  /map/refresh:
     post:
-      summary: Добавить ребро на карту
-      description: Добавляет новое ребро между узлами на карте аэропорта.
+      summary: Возвращает карту к исходному состоянию
+      description: Возвращает карту к исходному состоянию
       tags:
         - map
-      operationId: map_addEdge
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Edge'
-            example:
-              from: "node_2"
-              to: "node_3"
-              distance: 150
+      operationId: map_refreshAirportMap
       responses:
-        '201':
-          description: Ребро успешно добавлено
-        '400':
-          description: Неверные данные ребра
+        '200':
+          description: Успешный запрос
 
   /route:
     post:
@@ -259,18 +257,27 @@ paths:
               schema:
                 type: object
                 properties:
-                  nodeId:
+                  garrageNodeId:
                     type: string
                     description: ID узла
                   vehicleId:
                     type: string
                     description: ID транспорта
+                  serviceSpots:
+                    type: object
+                    description: Id узлов парковочных мест для обслуживания самолетов (парковка\_самолета:парковка\_сервисной\_машинки)
+                    additionalProperties:
+                      type: string
                 required:
-                  - nodeId
+                  - garrageNodeId
                   - vehicleId
+                  - serviceSpots
               example:
-                nodeId: "node_2"
-                vehicleId: "fuel_1"
+                garrageNodeId: "garrage_baggage_1"
+                vehicleId: "baggage_1"
+                serviceSpots:
+                  "airplane_parking_1": "airplane_parking_1_baggage_1"
+                  "airplane_parking_2": "airplane_parking_2_baggage_1"
         '400':
           description: Неверные данные запроса
         '409':
@@ -308,47 +315,7 @@ paths:
         '400':
           description: Неверные данные запроса
         '409':
-          description: Нет свободного парковочного места для самолета
-          
-  /airplane/{id}/service/{type}:
-    get:
-      summary: Получение места для обслуживания самолета
-      description: В зависимости от типа транспорта отдает нужный узел для парковки
-      tags:
-        - airplane
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: ID самолета
-        - name: type
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/VehicleType'
-          description: Тип транспорта
-      responses:
-        '200':
-          description: Id узла места для обслуживания
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  nodeId:
-                    type: string
-                    description: ID узла
-                required:
-                  - nodeId
-              example:
-                nodeId: "node_3"
-        '400':
-          description: Неверные данные запроса
-        '409':
-          description: Нет свободного узла для обслуживания
-      
+          description: Нет свободного парковочного места для самолета      
 
 components:
   schemas:
@@ -427,6 +394,7 @@ components:
           enum:
             - VEHICLE_NOT_FOUND_IN_NODE
             - EDGE_NOT_FOUND
+            - MAP_HAS_VEHICLES
         message:
           type: string
           description: Описание ошибки
