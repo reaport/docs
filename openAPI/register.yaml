@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: 'https://register.reaport.ru/'
+  - url: 'http://localhost:8080/'
     description: Local server
 
 paths:
@@ -103,12 +103,12 @@ components:
     RegisterPassengerRequest:
       type: object
       required:
-        - idTraveler
+        - passengerId
       properties:
-        idTraveler:
+        passengerId:
           type: string
           format: uuid
-          description: Уникальный идентификатор пассажира (idTraveler)
+          description: Уникальный идентификатор пассажира (passengerId)
         baggageWeight:
           type: number
           format: float
@@ -119,7 +119,7 @@ components:
           enum: [да, нет]  # Тип питания как enum
           description: Новый тип питания
       example:
-        idTraveler: "123e4567-e89b-12d3-a456-426614174000"
+        passengerId: "123e4567-e89b-12d3-a456-426614174000"
         baggageWeight: 23.5
         mealOption: "да"
 
