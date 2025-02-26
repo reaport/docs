@@ -1,17 +1,22 @@
 openapi: 3.0.0
 info:
-  title: Catering API
+  title: "Catering API"
   description: |
-    API для управления процессом доставки питания для рейсов. 
-    После завершения регистрации и выгрузки пассажиров/багажа оркестратор инициирует доставку питания.
+    API для управления процессом доставки питания (кейтеринг).
+    При запросе машины кейтеринга оркестратор передаёт следующие данные:
+      - flightId: идентификатор рейса.
+      - meals: список объектов, где для каждого типа питания указывается количество порций.
   version: 1.0.0
 
 paths:
-  /catering_api/request:
+  /request:
     post:
-      summary: Запрос на доставку питания
+      summary: "Запрос на доставку питания"
       description: |
-        После завершения регистрации и выгрузки пассажиров/багажа оркестратор отправляет запрос на начало доставки питания.
+        Оркестратор инициирует доставку питания, передавая следующие данные:
+          - flightId: идентификатор рейса.
+          - meals: массив, в котором для каждого типа питания (например, "Standard", "Vegetarian" и т.д.)
+                    указывается количество порций для доставки.
       operationId: RequestCatering
       requestBody:
         required: true
@@ -21,7 +26,7 @@ paths:
               $ref: '#/components/schemas/CateringRequest'
       responses:
         '200':
-          description: Успешный ответ
+          description: "Доставка питания успешно инициирована"
           content:
             application/json:
               schema:
@@ -31,7 +36,7 @@ paths:
                   value:
                     Status: "success"
         '400':
-          description: Неверный запрос
+          description: "Неверный запрос: отсутствует обязательное поле или неверно указано количество порций для одного из типов питания."
           content:
             application/json:
               schema:
@@ -41,8 +46,12 @@ paths:
                   value:
                     errorCode: 101
                     message: "FlightId is required"
+                InvalidMealOrder:
+                  value:
+                    errorCode: 102
+                    message: "Each meal order must have a valid mealType and a non-negative count"
         '500':
-          description: Внутренняя ошибка сервера
+          description: "Внутренняя ошибка сервера"
           content:
             application/json:
               schema:
@@ -53,42 +62,26 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
-  /catering_api/complete:
-    post:
-      summary: Завершение доставки питания
+  /mealtypes:
+    get:
+      summary: "Получение доступных типов питания"
       description: |
-        По завершении доставки питания кейтеринговая машина отправляет уведомление о завершении процесса.
-      operationId: CompleteCatering
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CateringCompletionRequest'
+        Модуль регистрации запрашивает у кейтеринга список заложенных типов питания,
+        чтобы отобразить покупателю доступные варианты.
+      operationId: GetMealTypes
       responses:
         '200':
-          description: Успешный ответ
+          description: "Список доступных типов питания успешно получен"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CateringResponse'
+                $ref: '#/components/schemas/MealTypesResponse'
               examples:
-                ValidRequest:
+                DefaultMealTypes:
                   value:
-                    Status: "success"
-        '400':
-          description: Неверный запрос
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CateringErrorResponse'
-              examples:
-                MissingFlightId:
-                  value:
-                    errorCode: 101
-                    message: "FlightId is required"
+                    mealTypes: ["Standard", "Vegetarian", "Vegan", "Gluten-Free"]
         '500':
-          description: Внутренняя ошибка сервера
+          description: "Внутренняя ошибка сервера"
           content:
             application/json:
               schema:
@@ -104,52 +97,38 @@ components:
     CateringRequest:
       type: object
       properties:
-        FlightId:
+        flightId:
           type: string
-          format: uuid
-          description: Идентификатор рейса.
-        FoodOrder:
+          description: "Идентификатор рейса, для которого осуществляется доставка питания."
+        meals:
           type: array
+          description: "Массив объектов, где для каждого типа питания указывается количество порций для доставки."
           items:
-            $ref: '#/components/schemas/FoodItem'
-          description: Список заказанных блюд с указанием типа и количества.
+            $ref: '#/components/schemas/MealOrder'
       required:
-        - FlightId
-        - FoodOrder
+        - flightId
+        - meals
 
-    FoodItem:
+    MealOrder:
       type: object
       properties:
-        MealType:
+        mealType:
           type: string
-          description: Тип блюда (например, стандарт, вегетарианский, детский).
-        Quantity:
+          description: "Тип питания (например, 'Standard', 'Vegetarian', 'Vegan', 'Gluten-Free')."
+        count:
           type: integer
-          description: Количество порций данного типа.
+          minimum: 0
+          description: "Количество порций для данного типа питания."
       required:
-        - MealType
-        - Quantity
-
-    CateringCompletionRequest:
-      type: object
-      properties:
-        FlightId:
-          type: string
-          format: uuid
-          description: Идентификатор рейса.
-        DeliveryTime:
-          type: integer
-          description: Время доставки в секундах.
-      required:
-        - FlightId
-        - DeliveryTime
+        - mealType
+        - count
 
     CateringResponse:
       type: object
       properties:
         Status:
           type: string
-          description: Сообщение о получении уведомления.
+          description: "Статус операции (например, 'success')."
       required:
         - Status
 
@@ -158,10 +137,21 @@ components:
       properties:
         errorCode:
           type: integer
-          description: Код ошибки.
+          description: "Код ошибки."
         message:
           type: string
-          description: Сообщение об ошибке.
+          description: "Сообщение об ошибке."
       required:
         - errorCode
         - message
+
+    MealTypesResponse:
+      type: object
+      properties:
+        mealTypes:
+          type: array
+          items:
+            type: string
+          description: "Список доступных типов питания."
+      required:
+        - mealTypes
