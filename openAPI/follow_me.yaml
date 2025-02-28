@@ -5,6 +5,10 @@ info:
     API для управления машинами сопровождения самолетов. Для подробной информации смотрите [документацию](https://docs.google.com/document/d/1-A99pLnf-T3KJgUowspAIestsUUSzbDQ0Sfr5KvSmdI/edit?tab=t.xxby8r33la9d).
   version: 1.0.0
 
+  servers:
+  - url: https://follow-me.reaport.ru
+    description: Сервер для follow-me
+
 paths:
   /get_car:
     post:
@@ -122,21 +126,16 @@ components:
           type: string
           format: uuid
           description: Идентификатор самолета, которому необходимо сопровождение.
-        FollowType:
-          type: integer
-          enum: [1, 2]
-          description: Тип оказываемого сопровождения.
-        GateNumber:
-          type: integer
-          description: Точка А или B в зависимости от FollowType.
-        RunawayNumber:
-          type: integer
-          description: Точка A или B в зависимости от FollowType.
+        NodeFrom:
+          type: string
+          description: Точка, куда надо приехать из гаража.
+        NodeTo:
+          type: string
+          description: Точка, куда надо привезти самолет.
       required:
         - AirplaneId
-        - FollowType
-        - GateNumber
-        - RunawayNumber
+        - NodeFrom
+        - NodeTo
 
     WeNeedFollowMeResponse:
       type: object
@@ -145,13 +144,12 @@ components:
           type: string
           format: uuid
           description: Идентификатор машины сопровождения.
-        TimeToWait:
-          type: number
-          format: double
-          description: Время ожидания машины сопровождения.
+        Wait:
+          type: bool
+          description: Время ожидания машины сопровождения. true - ожидание необходимо, false - машина выезжает
       required:
         - CarId
-        - TimeToWait
+        - Wait
 
     WeNeedFollowMeErrorResponse:
       type: object
