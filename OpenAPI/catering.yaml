@@ -7,6 +7,10 @@ info:
       - FlightId: идентификатор рейса.
       - Meals: массив заказов, где для каждого типа питания указывается количество порций.
   version: "1.0.0"
+  
+  servers:
+  - url: 'https:catering.reaport.ru'
+    description: Сервер для кейтеринга
 
 paths:
   /request:
