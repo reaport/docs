@@ -5,9 +5,13 @@ info:
     API для управления машинами сопровождения самолетов. Для подробной информации смотрите [документацию](https://docs.google.com/document/d/1-A99pLnf-T3KJgUowspAIestsUUSzbDQ0Sfr5KvSmdI/edit?tab=t.xxby8r33la9d).
   version: 1.0.0
 
-  servers:
+servers:
   - url: https://follow-me.reaport.ru
     description: Сервер для follow-me
+    
+tags:
+  - name: follow-me
+    description: "Вызов машины сопровождения"
 
 paths:
   /get_car:
@@ -16,7 +20,10 @@ paths:
       description: |
         Запрашивает машину Follow me для судна.
         Оркестратор передает тип передвижения, а машина возвращает время ожидания.
+      tags:
+        - follow-me
       operationId: WeNeedFollowMe
+      
       requestBody:
         required: true
         content:
@@ -80,6 +87,8 @@ paths:
       description: |
         Отправляет в машину маршрут передвижения.
         Вышка наземного движения высылает значения поворота, которые обрабатываются и передаются в самолет.
+      tags:
+        - follow-me
       operationId: FollowMeNavigate
       requestBody:
         required: true
@@ -145,7 +154,7 @@ components:
           format: uuid
           description: Идентификатор машины сопровождения.
         Wait:
-          type: bool
+          type: boolean
           description: Время ожидания машины сопровождения. true - ожидание необходимо, false - машина выезжает
       required:
         - CarId
