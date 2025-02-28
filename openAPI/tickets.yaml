@@ -257,4 +257,46 @@ paths:
         - tickets
       summary: Получить список пассажиров по рейсу (для модуля «Регистрация»)
       description: |
-        Позволяет модулю «Регистрация» получить список всех пассажиров, у которых есть билет на указанный рейс
+         Модуль «Регистрация» вызывает этот метод, чтобы получить список всех пассажиров,у которых есть билет на указанный рейс (статус билета "куплен", т.е. не возвращён).
+      operationId: getPassengersForFlight
+      parameters:
+        - name: flightId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор рейса
+      responses:
+        '200':
+          description: Успешно возвращён список пассажиров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    passengerId:
+                      type: string
+                      description: Уникальный идентификатор пассажира
+                    seatClass:
+                      type: string
+                      enum: [economy, business]
+                      description: Класс обслуживания
+                    mealType:
+                      type: string
+                      description: Код/название выбранного питания
+                    baggage:
+                      type: string
+                      enum: [да, нет]
+                      description: Признак багажа
+        '400':
+          description: Неверные параметры (отсутствует flightId)
+        '404':
+          description: Рейс не найден или пассажиров нет
+        '408':
+          description: Тайм-аут при обращении к модулю «Покупка и возврат билетов»
+        '422':
+          description: Переданные данные не соответствуют ожидаемой схеме
+        '503':
+          description: Модуль временно недоступен (ошибка сервера или перегрузка)
