@@ -9,7 +9,7 @@ info:
   version: "1.0.0"
   
 servers:
-  - url: 'https://catering.reaport.ru/'
+  - url: https://catering.reaport.ru
     description: Сервер для кейтеринга
 
 paths:
