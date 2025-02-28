@@ -5,6 +5,10 @@ info:
     API для управления процессом очистки самолётов. 
     Модуль очистки работает параллельно с кейтерингом и отвечает за очистку салона и заправку водой.
   version: 1.0.0
+  
+servers:
+  - url: https://cleaning.reaport.ru
+    description: Сервер для разработки, развернутый при помощи dokploy
 
 paths:
   /request:
@@ -30,7 +34,7 @@ paths:
               examples:
                 ValidRequest:
                   value:
-                    status: "success"
+                    wait: true
         '400':
           description: Неверный запрос
           content:
@@ -63,22 +67,26 @@ components:
     RequestCleaningInput:
       type: object
       properties:
-        FlightNumber:
+        AircraftId:
           type: string
-          description: Номер рейса, для которого требуется очистка.
+          description: Id самолёта, для которого требуется очистка.
+        NodeId:
+          type: string
+          description: Id узла куда ехать.
         WaterAmount:
           type: integer
           description: Количество воды, необходимое для заправки (0 или больше).
       required:
-        - FlightNumber
+        - AircraftId
+        - NodeId
         - WaterAmount
 
     RequestCleaningResponse:
       type: object
       properties:
-        status:
-          type: string
-          description: Статус выполнения операции.
+        wait:
+          type: boolean
+          description: Информация о наличии свободных машин.
       required:
         - status
 
@@ -91,45 +99,6 @@ components:
         message:
           type: string
           description: Сообщение об ошибке, предоставляющее дополнительные детали.
-      required:
-        - errorCode
-        - message
-
-    NotifyCleaningCompletionInput:
-      type: object
-      properties:
-        FlightNumber:
-          type: string
-          description: Номер рейса, для которого закончена очистка.
-        Status:
-          type: string
-          description: Статус завершения очистки.
-      required:
-        - FlightNumber
-        - Status
-
-    NotifyCleaningCompletionResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          description: Статус выполнения уведомления.
-        message:
-          type: string
-          description: Сообщение о выполнении операции.
-      required:
-        - status
-        - message
-
-    NotifyCleaningErrorResponse:
-      type: object
-      properties:
-        errorCode:
-          type: integer
-          description: Код ошибки.
-        message:
-          type: string
-          description: Сообщение об ошибке.
       required:
         - errorCode
         - message
