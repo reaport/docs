@@ -5,6 +5,10 @@ info:
     API для управления процессом заправки самолётов топливом. Для подробной информации смотрите [документацию](https://docs.google.com/document/d/1-A99pLnf-T3KJgUowspAIestsUUSzbDQ0Sfr5KvSmdI/edit?tab=t.g0yqyiv1tqaa).
   version: 1.0.0
 
+servers:
+  - url: https://fuel.reaport.ru
+    description: Сервер для заправки самолёта
+
 paths:
   /request:
     post:
