@@ -34,7 +34,7 @@ paths:
               examples:
                 ValidRequest:
                   value:
-                    Status: "success"
+                    wait: true
         '400':
           description: Неверный запрос
           content:
@@ -54,17 +54,6 @@ paths:
                   value:
                     errorCode: 102
                     message: "FuelNeeded must be a non-negative integer"
-        '404':
-          description: Нет свободных машин
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RequestRefuelingErrorResponse'
-              examples:
-                NoAvailableMachines:
-                  value:
-                    errorCode: 201
-                    message: "No available fuel trucks are free to perform the refueling."
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -95,11 +84,11 @@ components:
     RequestRefuelingResponse:
       type: object
       properties:
-        Status:
-          type: string
-          description: Сообщение о получении информации.
+        wait:
+          type: bool
+          description: Сообщение о наличии свободных машин.
       required:
-        - Status
+        - wait
 
     RequestRefuelingErrorResponse:
       type: object
