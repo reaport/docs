@@ -8,7 +8,7 @@ info:
       - Meals: массив заказов, где для каждого типа питания указывается количество порций.
   version: "1.0.0"
   
-  servers:
+servers:
   - url: 'https:catering.reaport.ru'
     description: Сервер для кейтеринга
 
