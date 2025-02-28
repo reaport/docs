@@ -1,0 +1,167 @@
+openapi: 3.0.0 
+info: 
+  title: Baggage API 
+  version: 1.0.0 
+  description: API для управления загрузкой и выгрузкой багажа 
+
+servers: 
+  - url: 'https://baggage.reaport.ru/' 
+    description: Production server 
+
+paths: 
+  /load: 
+    post: 
+      summary: Запрос на загрузку багажа 
+      requestBody: 
+        required: true 
+        content: 
+          application/json: 
+            schema: 
+              type: object 
+              required: 
+                - aircraft_id 
+                - baggage_weight 
+                - aircraft coordinates 
+              properties: 
+                aircraft_id: 
+                  type: string 
+                  description: Идентификатор самолёта 
+                baggage_weight: 
+                  type: number 
+                  format: double
+                  description: Количество багажа пассажиров (в кг) 
+                aircraft coordinates: 
+                  type: string
+                  description: Координаты самолёта 
+      responses: 
+        '200': 
+          description: Успешный запрос 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  waiting: 
+                    type: boolean
+                    description: true, если свободных машин нет, иначе false
+        '400': 
+          description: Неверный запрос 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+        '500': 
+          description: Ошибка на стороне сервера 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+  /upload: 
+    post: 
+      summary: Запрос на выгрузку багажа 
+      requestBody: 
+        required: true 
+        content: 
+          application/json: 
+            schema: 
+              type: object 
+              required: 
+                - aircraft_id 
+                - baggage_weight 
+                - aircraft coordinates 
+              properties: 
+                aircraft_id: 
+                  type: string 
+                  description: Идентификатор самолёта 
+                baggage_weight: 
+                  type: number 
+                  format: double
+                  description: Количество багажа на самолёте (в кг) 
+                aircraft coordinates: 
+                  type: string
+                  description: Координаты самолёта 
+      responses: 
+        '200': 
+          description: Успешный запрос 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  waiting: 
+                    type: boolean
+                    description: true, если свободных машин нет, иначе false
+        '400': 
+          description: Неверный запрос 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+        '500': 
+          description: Ошибка на стороне сервера 
+          content: 
+            application/json: 
+              schema: 
+                type: object 
+                properties: 
+                  error: 
+                    type: string 
+                    description: Описание ошибки 
+  /getCapacity:
+    get:
+      summary: Получить вместимость автомобиля
+      operationId: getVehicleCapacity
+      responses:
+        '200':
+          description: Успешный ответ с текущей вместимостью
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capacity:
+                    type: number
+                    format: float
+                    description: Текущая вместимость автомобиля
+
+  /updateCapacity:
+    post:
+      summary: Обновить вместимость автомобиля
+      operationId: setVehicleCapacity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                capacity:
+                  type: number
+                  format: float
+                  description: Новая вместимость автомобиля
+      responses:
+        '200':
+          description: Успешное обновление вместимости
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capacity:
+                    type: number
+                    format: float
+                    description: Обновленная вместимость автомобиля
+        '400':
+          description: Некорректное значение вместимости
