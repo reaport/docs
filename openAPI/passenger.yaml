@@ -1,0 +1,93 @@
+openapi: 3.0.3
+info:
+  title: Passenger
+  version: '1.0'
+servers:
+  - url: https://passenger.reaport.ru/v2
+paths:
+  /find:
+    get:
+      description: |
+        Поиск пассажира по переданному параметру.
+        **Только один из параметров (`passengerUUID` или `ticketUUID`) может быть передан. 
+        Передача обоих параметров одновременно не допускается.**
+        
+        Допускается не передавать параметры. В этом случае будут возвращены все существующие пассажиры.
+      
+      parameters:
+        - in: query
+          name: passengerUUID
+          required: false
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+          description: Уникальный идентификатор пассажира. Не использовать одновременно с `ticketUUID`.
+
+        - in: query
+          name: ticketUUID
+          required: false
+          schema:
+            type: string
+            format: uuid
+            example: "987e6543-e21b-45d3-b654-426614179999"
+          description: Уникальный идентификатор билета. Не использовать одновременно с `passengerUUID`.
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  $ref: "#/components/schemas/Passenger"
+
+        '400':
+          description: "Bad request: you may only pass one query parameter (`passengerUUID` или `ticketUUID`)"
+
+        '404':
+          description: Passenger not found
+
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    Passenger:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: UUID пассажира.
+
+        mealPreference:
+          description: Гастрономические предпочтения пассажира.
+          oneOf:
+            - type: string
+              description: Пассажир берет только один тип питания
+            - type: array
+              description: Пассажир может выбрать из нескольких типов
+              items:
+                type: string
+
+        baggageWeight:
+          description: Вес багажа пассажира
+          type: number
+          format: float
+          minimum: 0
+        
+        ticketId:
+          description: Идентификатор билета, купленного пассажиром
+          type: string
+          format: uuid
+          nullable: true
+
+        status:
+          type: string
+          description: Состояние пассажира
+          enum: ['AwaitingTicket','AwaitingRegistration', 'AwaitingBoarding', 'InTransit', 'OnPlane', 'LeavingAirport']
+      
+      
