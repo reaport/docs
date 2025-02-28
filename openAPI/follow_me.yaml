@@ -1,0 +1,197 @@
+openapi: 3.0.0
+info:
+  title: Follow Me API
+  description: |
+    API для управления машинами сопровождения самолетов. Для подробной информации смотрите [документацию](https://docs.google.com/document/d/1-A99pLnf-T3KJgUowspAIestsUUSzbDQ0Sfr5KvSmdI/edit?tab=t.xxby8r33la9d).
+  version: 1.0.0
+
+servers:
+  - url: https://follow-me.reaport.ru
+    description: Сервер для follow-me
+    
+tags:
+  - name: follow-me
+    description: "Вызов машины сопровождения"
+
+paths:
+  /get_car:
+    post:
+      summary: Запрос машины сопровождения
+      description: |
+        Запрашивает машину Follow me для судна.
+        Оркестратор передает тип передвижения, а машина возвращает время ожидания.
+      tags:
+        - follow-me
+      operationId: WeNeedFollowMe
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeNeedFollowMeRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeNeedFollowMeResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    CarId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    TimeToWait: 10
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeNeedFollowMeErrorResponse'
+              examples:
+                InvalidAirplaneId:
+                  value:
+                    errorCode: 10
+                    message: "Invalid AirplaneId"
+                InvalidFollowType:
+                  value:
+                    errorCode: 11
+                    message: "Invalid FollowType"
+                InvalidGateNumber:
+                  value:
+                    errorCode: 12
+                    message: "Invalid GateNumber"
+                InvalidRunawayNumber:
+                  value:
+                    errorCode: 13
+                    message: "Invalid RunawayNumber"
+                WrongFollowType:
+                  value:
+                    errorCode: 21
+                    message: "Wrong FollowType. It should be [1, 2]"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeNeedFollowMeErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+  /navigate:
+    post:
+      summary: Отправка маршрута передвижения
+      description: |
+        Отправляет в машину маршрут передвижения.
+        Вышка наземного движения высылает значения поворота, которые обрабатываются и передаются в самолет.
+      tags:
+        - follow-me
+      operationId: FollowMeNavigate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FollowMeNavigateRequest'
+      responses:
+        '204':
+          description: Успешный ответ
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowMeNavigateErrorResponse'
+              examples:
+                InvalidNavigate:
+                  value:
+                    errorCode: 30
+                    message: "Invalid Navigate"
+                WrongNavigate:
+                  value:
+                    errorCode: 31
+                    message: "Wrong Navigate. It should be [follow, right, left, stop]"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowMeNavigateErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+components:
+  schemas:
+    WeNeedFollowMeRequest:
+      type: object
+      properties:
+        AirplaneId:
+          type: string
+          format: uuid
+          description: Идентификатор самолета, которому необходимо сопровождение.
+        NodeFrom:
+          type: string
+          description: Точка, куда надо приехать из гаража.
+        NodeTo:
+          type: string
+          description: Точка, куда надо привезти самолет.
+      required:
+        - AirplaneId
+        - NodeFrom
+        - NodeTo
+
+    WeNeedFollowMeResponse:
+      type: object
+      properties:
+        CarId:
+          type: string
+          format: uuid
+          description: Идентификатор машины сопровождения.
+        Wait:
+          type: boolean
+          description: Время ожидания машины сопровождения. true - ожидание необходимо, false - машина выезжает
+      required:
+        - CarId
+        - Wait
+
+    WeNeedFollowMeErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки.
+        message:
+          type: string
+          description: Сообщение об ошибке.
+      required:
+        - errorCode
+        - message
+
+    FollowMeNavigateRequest:
+      type: object
+      properties:
+        Navigate:
+          type: string
+          enum: [follow, right, left, stop]
+          description: Значения движения к самолету.
+      required:
+        - Navigate
+
+    FollowMeNavigateErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки.
+        message:
+          type: string
+          description: Сообщение об ошибке.
+      required:
+        - errorCode
+        - message
