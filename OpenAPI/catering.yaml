@@ -1,0 +1,244 @@
+openapi: 3.0.0
+info:
+  title: "Catering API"
+  description: |
+    API для управления процессом доставки питания (кейтеринг).
+    При запросе машины кейтеринга модуль Регистрации передаёт:
+      - FlightId: идентификатор рейса.
+      - Meals: массив заказов, где для каждого типа питания указывается количество порций.
+  version: "1.0.0"
+  
+servers:
+  - url: https://catering.reaport.ru
+    description: Сервер для кейтеринга
+    
+tags:
+  - name: admin
+    description: "Админка"
+
+paths:
+  /request:
+    post:
+      summary: "Запрос на доставку питания"
+      description: |
+        Оркестратор инициирует доставку питания, передавая следующие данные:
+          - FlightId: идентификатор рейса.
+          - Meals: массив объектов, где для каждого типа питания (например, "Standard", "Vegetarian", "Vegan", "Gluten-Free")
+                    указывается количество порций, передаваемое модулем Регистрации.
+      operationId: RequestCatering
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CateringRequest'
+      responses:
+        '200':
+          description: "Доставка питания успешно инициирована"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CateringResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    Waiting: false
+                    Status: "success"
+        '400':
+          description: "Неверный запрос: отсутствует обязательное поле или переданы некорректные данные."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InvalidInput:
+                  value:
+                    Error: "Некорректные входные параметры."
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    Error: "InternalServerError"
+
+  /mealtypes:
+    get:
+      summary: "Получение доступных типов питания"
+      description: |
+        Модуль регистрации запрашивает список типов питания для отображения пользователю.
+      operationId: GetMealTypes
+      responses:
+        '200':
+          description: "Список типов питания успешно получен"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealTypesResponse'
+              examples:
+                DefaultMealTypes:
+                  value:
+                    mealTypes: ["Standard", "Vegetarian", "Vegan", "Gluten-Free"]
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    Error: "InternalServerError"
+
+  /getCapacity:
+    get:
+      tags:
+        - admin
+      summary: "Получение текущей вместимости транспортного средства"
+      description: "Возвращает текущую вместимость транспортного средства (например, количество порций)."
+      operationId: GetCapacity
+      responses:
+        '200':
+          description: "Вместимость успешно получена"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleCapacity'
+              examples:
+                CurrentCapacity:
+                  value:
+                    Capacity: 100
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    Error: "InternalServerError"
+
+  /updateCapacity:
+    post:
+      tags:
+        - admin
+      summary: "Обновление вместимости транспортного средства"
+      description: "Позволяет обновить вместимость транспортного средства. В запросе передаётся новое значение."
+      operationId: UpdateCapacity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleCapacity'
+      responses:
+        '200':
+          description: "Вместимость успешно обновлена"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleCapacity'
+              examples:
+                UpdatedCapacity:
+                  value:
+                    Capacity: 150
+        '400':
+          description: "Неверный запрос: передано некорректное значение вместимости."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InvalidCapacity:
+                  value:
+                    Error: "Неверное значение вместимости."
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    Error: "InternalServerError"
+
+components:
+  schemas:
+    CateringRequest:
+      type: object
+      properties:
+        AircraftId:
+          type: string
+          description: "Идентификатор самолёта, для которого осуществляется доставка питания."
+        NodeId:
+          type: string
+          description: "Идентификатор точки, куда осуществляется доставка питания."
+        Meals:
+          type: array
+          description: "Массив заказов, где каждый объект содержит тип питания и количество заказанных порций, переданное модулем Регистрации."
+          items:
+            $ref: '#/components/schemas/MealOrder'
+      required:
+        - FlightId
+        - Meals
+
+    MealOrder:
+      type: object
+      properties:
+        MealType:
+          type: string
+          description: "Тип питания (например, 'Standard', 'Vegetarian', 'Vegan', 'Gluten-Free')."
+        Count:
+          type: integer
+          minimum: 0
+          description: "Количество заказанных порций для данного типа питания, переданное модулем Регистрации."
+      required:
+        - MealType
+        - Count
+
+    CateringResponse:
+      type: object
+      properties:
+        Waiting:
+          type: boolean
+          description: "Флаг, указывающий, ожидается ли транспортное средство."
+        Status:
+          type: string
+          description: "Статус операции (например, 'success')."
+      required:
+        - Waiting
+        - Status
+
+    ErrorResponse:
+      type: object
+      properties:
+        Error:
+          type: string
+          description: "Сообщение об ошибке."
+      required:
+        - Error
+
+    MealTypesResponse:
+      type: object
+      properties:
+        mealTypes:
+          type: array
+          items:
+            type: string
+          description: "Список доступных типов питания."
+      required:
+        - mealTypes
+
+    VehicleCapacity:
+      type: object
+      properties:
+        Capacity:
+          type: number
+          description: "Вместимость транспортного средства (например, количество порций)."
+      required:
+        - Capacity
