@@ -1,0 +1,219 @@
+openapi: 3.0.3
+info:
+  title: Reaport Register Module API
+  description: Api для модуля регистрации пассажира на рейс
+  version: 1.0.0
+
+servers:
+  - url: 'https://register.reaport.ru/'
+    description: Local server
+
+paths:
+  /passenger:
+    post:
+      summary: Регистрация пассажира
+      description: Получение от модуля генерации пассажиров человека для регистрации.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterPassengerRequest'
+      responses:
+        '200':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterPassengerResponse'
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validError:
+                  value:
+                    error: "Validation error"
+                wrongFood:
+                  value:
+                    error: "Wrong type of food"
+                wrongBaggage:
+                  value:
+                    error: "Exceeding the allowed baggage size"
+        '403':
+          description: Регистрация не доступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Registration is not available"
+        '404':
+          description: Пассажир не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "The passenger was not found"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Internal server error"
+
+  /flights:
+    post:
+      summary: Получение рейса, на которые открывается регистрация
+      description: Получение от модуля табло информации о рейсе, доступного для регистрации
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/FlightStatusRequest'
+
+      responses:
+        '200':
+          description: Рейс успешно зарегистрирован
+        '400':
+          description: Неверный запрос (ошибка валидации)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Validation error"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Internal server error"
+
+components:
+  schemas:
+    RegisterPassengerRequest:
+      type: object
+      required:
+        - passengerId
+      properties:
+        passengerId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пассажира (passengerId)
+        baggageWeight:
+          type: number
+          format: float
+          description: Вес багажа (кг)
+        mealOption:
+          type: string
+          nullable: true
+          enum: [да, нет]  # Тип питания как enum
+          description: Новый тип питания
+      example:
+        passengerId: "123e4567-e89b-12d3-a456-426614174000"
+        baggageWeight: 23.5
+        mealOption: "да"
+
+    RegisterPassengerResponse:
+      type: object
+      properties:
+        flightName:
+          type: string
+          description: Название рейса
+        departureTime:
+          type: string
+          format: date-time
+          description: Время вылета
+        startPlantingTime:
+          type: string
+          format: date-time
+          description: Начало посадки
+        seat:
+          type: string
+          description: Место в самолёте  
+      example:
+        flightName: "SU-1234"
+        departureTime: "2023-10-15T14:30:00Z"
+        startPlantingTime: "2023-10-15T14:10:00Z"
+        seat: "A2"
+        
+    FlightStatusRequest:
+      type: object
+      required:
+        - flightId
+        - flightName
+        - endRegisterTime
+        - departureTime
+        - startPlantingTime
+        - seatsAircraft
+      properties:
+        flightId:
+          type: string
+          description: Уникальный идентификатор рейса
+          format: uuid
+        flightName:
+          type: string
+          description: Название рейса (номер)
+        endRegisterTime:
+          type: string
+          format: date-time
+          description: Время окончания регистрации
+        departureTime:
+          type: string
+          format: date-time
+          description: Время вылета
+        startPlantingTime:
+          type: string
+          format: date-time
+          description: Время начала посадки
+        seatsAircraft:
+          type: array
+          description: Информация о местах в самолете
+          items:
+            $ref: '#/components/schemas/SeatInfo'
+      example:
+        flightId: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+        flightName: "SU-1234"
+        endRegisterTime: "2023-10-15T13:30:00Z"
+        departureTime: "2023-10-15T14:30:00Z"
+        startPlantingTime: "2023-10-15T14:10:00Z"
+        seatsAircraft:
+          - seatNumber: "1A"
+            seatClass: "business"
+          - seatNumber: "1B"
+            seatClass: "business"
+          - seatNumber: "2A"
+            seatClass: "economy"
+          - seatNumber: "2B"
+            seatClass: "economy"      
+    SeatInfo:
+      type: object
+      required:
+        - seatNumber
+        - seatClass
+      properties:
+        seatNumber:
+          type: string
+          description: Номер места
+        seatClass:
+          type: string
+          enum:
+            - business
+            - economy
+          description: Класс места
+          
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Описание ошибки
