@@ -85,7 +85,7 @@ components:
       type: object
       properties:
         wait:
-          type: bool
+          type: boolean
           description: Сообщение о наличии свободных машин.
       required:
         - wait
