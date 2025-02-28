@@ -32,7 +32,7 @@ paths:
               examples:
                 ValidRequest:
                   value:
-                    Status: "success"
+                    wait: true
         '400':
           description: Неверный запрос
           content:
@@ -69,16 +69,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ChargingCompletionRequest'
       responses:
-        '200':
+        '204':
           description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ChargingResponse'
-              examples:
-                ValidRequest:
-                  value:
-                    Status: "success"
         '400':
           description: Неверный запрос
           content:
@@ -125,11 +117,11 @@ components:
     ChargingResponse:
       type: object
       properties:
-        Status:
-          type: string
-          description: Сообщение о получении информации.
+        wait:
+          type: boolean
+          description: Сообщение о наличии свободных машин.
       required:
-        - Status
+        - wait
 
     ChargingErrorResponse:
       type: object
