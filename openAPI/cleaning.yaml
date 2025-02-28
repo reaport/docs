@@ -1,0 +1,104 @@
+openapi: 3.0.0
+info:
+  title: Cleaning API
+  description: |
+    API для управления процессом очистки самолётов. 
+    Модуль очистки работает параллельно с кейтерингом и отвечает за очистку салона и заправку водой.
+  version: 1.0.0
+  
+servers:
+  - url: https://cleaning.reaport.ru
+    description: Сервер для разработки, развернутый при помощи dokploy
+
+paths:
+  /request:
+    post:
+      summary: Запрос на очистку
+      description: |
+        После высадки пассажиров оркестратор отправляет запрос на очистку самолета.
+        Запрос включает информацию о необходимой очистке и заправке водой.
+      operationId: RequestCleaning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCleaningInput'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestCleaningResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    wait: true
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestCleaningErrorResponse'
+              examples:
+                MissingFlightNumber:
+                  value:
+                    errorCode: 100
+                    message: "FlightNumber is required"
+                InvalidWaterAmount:
+                  value:
+                    errorCode: 101
+                    message: "WaterAmount must be a non-negative integer"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestCleaningErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+components:
+  schemas:
+    RequestCleaningInput:
+      type: object
+      properties:
+        AircraftId:
+          type: string
+          description: Id самолёта, для которого требуется очистка.
+        NodeId:
+          type: string
+          description: Id узла куда ехать.
+        WaterAmount:
+          type: integer
+          description: Количество воды, необходимое для заправки (0 или больше).
+      required:
+        - AircraftId
+        - NodeId
+        - WaterAmount
+
+    RequestCleaningResponse:
+      type: object
+      properties:
+        wait:
+          type: boolean
+          description: Информация о наличии свободных машин.
+      required:
+        - status
+
+    RequestCleaningErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки, указывающий на тип проблемы.
+        message:
+          type: string
+          description: Сообщение об ошибке, предоставляющее дополнительные детали.
+      required:
+        - errorCode
+        - message
