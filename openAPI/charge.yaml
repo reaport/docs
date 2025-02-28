@@ -5,6 +5,10 @@ info:
     API для управления процессом зарядки самолетов. Для подробной информации смотрите [документацию](https://docs.google.com/document/d/1-A99pLnf-T3KJgUowspAIestsUUSzbDQ0Sfr5KvSmdI/edit?tab=t.7lbm2zu22odb).
   version: 1.0.0
 
+servers:
+  - url: https://charge.reaport.ru
+    description: Сервер для зарядки самолёта
+
 paths:
   /request:
     post:
