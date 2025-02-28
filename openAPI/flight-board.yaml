@@ -1,0 +1,248 @@
+openapi: 3.0.0
+info:
+  title: Dashboard API
+  description: |
+    API для управления отображением рейсов в табло аэропорта. 
+  version: 1.0.0
+
+paths:
+  /registration:
+    post:
+      summary: Обновление информации о регистрации
+      description: |
+        Метод для передачи информации о рейсах, на которые открыта регистрация.
+      operationId: UpdateRegistrationInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightRegistrationInput'
+      responses:
+        '200':
+          description: Успешное обновление информации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightRegistrationResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    status: "success"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                MissingFlightNumber:
+                  value:
+                    errorCode: 100
+                    message: "FlightNumber is required"
+                InvalidFlightNumber:
+                  value:
+                    errorCode: 101
+                    message: "Invalid FlightNumber"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+  /ticket-purchase:
+    post:
+      summary: Информирование о покупке билетов
+      description: |
+        Метод для передачи информации о рейсах, на которые открыта покупка билетов.
+      operationId: InformTicketPurchase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketPurchaseInput'
+      responses:
+        '200':
+          description: Успешная передача информации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketPurchaseResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    status: "success"
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                MissingFlightNumber:
+                  value:
+                    errorCode: 100
+                    message: "FlightNumber is required"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+    /boarding:
+    post:
+      summary: Обновление информации о рейсах
+      description: |
+        Метод для передачи информации о существующих рейсах, посадки.
+      operationId: InformBoardingTime
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BoardingTimeInput'
+      responses:
+        '200':
+          description: Успешное обновление информации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                ValidRequest:
+                  value:
+                    status: "success"
+                    message: "Boarding time updated successfully."
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                MissingFlightNumber:
+                  value:
+                    errorCode: 100
+                    message: "FlightNumber is required."
+                InvalidBoardingTime:
+                  value:
+                    errorCode: 101
+                    message: "Invalid boarding time format."
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "Internal server error occurred."
+
+components:
+  schemas:
+    FlightRegistrationInput:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          description: Номер рейса для открытия регистрации.
+      required:
+        - flightNumber
+
+    FlightRegistrationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус выполнения операции.
+      required:
+        - status
+
+    TicketPurchaseInput:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          description: Номер рейса, на который открыта продажа билетов.
+      required:
+        - flightNumber
+
+    TicketPurchaseResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус выполнения операции.
+      required:
+        - status
+
+    FlightStartInput:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          description: Номер рейса, уведомляющий о его начале.
+        startTime:
+          type: string
+          format: date-time
+          description: Время начала рейса.
+      required:
+        - flightNumber
+        - startTime
+
+    BoardingTimeInput:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          description: Номер рейса.
+        purchaseOpen:
+          type: string
+          format: date-time
+          description: Дата и время открытия посадки.
+      required:
+        - flightNumber
+        - boardingTime
+
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус выполнения действия.
+        message:
+          type: string
+          description: Сообщение, подтверждающее успешное выполнение действия.
+      required:
+        - status
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          description: Код ошибки.
+        message:
+          type: string
+          description: Сообщение об ошибке.
+      required:
+        - errorCode
+        - message
