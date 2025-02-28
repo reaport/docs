@@ -119,3 +119,49 @@ paths:
                   error: 
                     type: string 
                     description: Описание ошибки 
+  /getCapacity:
+    get:
+      summary: Получить вместимость автомобиля
+      operationId: getVehicleCapacity
+      responses:
+        '200':
+          description: Успешный ответ с текущей вместимостью
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capacity:
+                    type: number
+                    format: float
+                    description: Текущая вместимость автомобиля
+
+  /updateCapacity:
+    post:
+      summary: Обновить вместимость автомобиля
+      operationId: setVehicleCapacity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                capacity:
+                  type: number
+                  format: float
+                  description: Новая вместимость автомобиля
+      responses:
+        '200':
+          description: Успешное обновление вместимости
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capacity:
+                    type: number
+                    format: float
+                    description: Обновленная вместимость автомобиля
+        '400':
+          description: Некорректное значение вместимости
