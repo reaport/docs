@@ -11,6 +11,10 @@ info:
 servers:
   - url: https://catering.reaport.ru
     description: Сервер для кейтеринга
+    
+tags:
+  - name: admin
+    description: "Админка"
 
 paths:
   /request:
@@ -91,6 +95,8 @@ paths:
 
   /getCapacity:
     get:
+      tags:
+        - admin
       summary: "Получение текущей вместимости транспортного средства"
       description: "Возвращает текущую вместимость транспортного средства (например, количество порций)."
       operationId: GetCapacity
@@ -118,6 +124,8 @@ paths:
 
   /updateCapacity:
     post:
+      tags:
+        - admin
       summary: "Обновление вместимости транспортного средства"
       description: "Позволяет обновить вместимость транспортного средства. В запросе передаётся новое значение."
       operationId: UpdateCapacity
@@ -164,9 +172,12 @@ components:
     CateringRequest:
       type: object
       properties:
-        FlightId:
+        AircraftId:
           type: string
-          description: "Идентификатор рейса, для которого осуществляется доставка питания."
+          description: "Идентификатор самолёта, для которого осуществляется доставка питания."
+        NodeId:
+          type: string
+          description: "Идентификатор точки, куда осуществляется доставка питания."
         Meals:
           type: array
           description: "Массив заказов, где каждый объект содержит тип питания и количество заказанных порций, переданное модулем Регистрации."
