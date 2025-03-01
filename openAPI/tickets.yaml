@@ -1,0 +1,301 @@
+openapi: 3.0.0
+info:
+  title: API для модуля покупки и возврата билетов
+  version: "1.0.0"
+  description: >
+    Модуль «Покупка и возврат билетов» предоставляет пассажирам возможность:
+    - Выбирать направление полёта из доступных рейсов
+    - Выбирать дополнительные опции (класс обслуживания, питание, багаж)
+    - Покупать билеты 
+    - Возвращать билеты (до начала регистрации)
+    
+    Взаимодействует с модулями «Табло» (для получения доступных рейсов), 
+    «Кейтеринг» (для получения доступных типов питания) и «Регистрация» 
+    (передача данных о купленных билетах на конкретный рейс).
+    
+servers:
+  - url: https://tickets.reaport.ru
+    description: Сервер для покупки возврата билетов
+    
+tags:
+  - name: tickets
+    description: "Эндпоинты для операций с билетами (покупка, возврат, информация)"
+
+paths:
+  /buy:
+    post:
+      tags:
+        - tickets
+      summary: Покупка билета
+      description: |
+        Позволяет приобрести билет на выбранный рейс.
+        Входные данные:
+          - passengerId (идентификатор пассажира)
+          - flightId (идентификатор рейса)
+          - seatClass (класс обслуживания)
+          - mealType (конкретный тип питания из списка, полученного от «Кейтеринг»)
+          - baggage (признак наличия багажа: "да" или "нет")
+
+        В результате при успешной покупке создаётся запись о билете, модуль уменьшает 
+        количество доступных мест для соответствующего рейса и класса обслуживания на 1.
+        Возвращается:
+          - ticketId — уникальный идентификатор созданного билета
+          - direction — маршрут (место прилёта) рейса (для удобства пассажира)
+          - departureTime — время вылета рейса
+          - status — статус операции
+        
+      operationId: buyTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passengerId:
+                  type: string
+                  description: Уникальный идентификатор пассажира.
+                flightId:
+                  type: string
+                  description: Идентификатор рейса.
+                seatClass:
+                  type: string
+                  enum: [economy, business]
+                  description: Класс обслуживания.
+                mealType:
+                  type: string
+                  description: Код или название желаемого типа питания (см. /meal-options).
+                baggage:
+                  type: string
+                  enum: [да, нет]
+                  description: Признак того, что пассажир сдаёт багаж.
+              required:
+                - passengerId
+                - flightId
+                - seatClass
+                - baggage
+      responses:
+        '200':
+          description: Билет успешно куплен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                    description: Уникальный идентификатор билета.
+                  direction:
+                    type: string
+                    description: Направление (маршрут) приобретённого рейса.
+                  departureTime:
+                    type: string
+                    format: date-time
+                    description: Время вылета рейса.
+                  status:
+                    type: string
+                    description: Статус операции (например, "success").
+        '400':
+          description: Некорректные входные данные (формат, отсутствие обязательных параметров).
+        '409':
+          description: Нарушение бизнес-правил (пассажир уже имеет билет на этот рейс, нет мест).
+        '500':
+          description: Внутренняя ошибка модуля или недоступность внешнего сервиса «Табло»/«Кейтеринг», 
+                       делающая покупку невозможной 
+
+  /cancel/{ticketId}:
+    post:
+      tags:
+        - tickets
+      summary: Отмена (возврат) билета
+      description: |
+        Позволяет вернуть ранее купленный билет по его идентификатору до начала регистрации (BR-5).
+        При успешном возврате:
+          - Билет помечается как «возвращён»
+          - Увеличивается количество доступных мест на соответствующий рейс и класс
+        Если регистрация уже началась или билет не найден/не принадлежит данному пассажиру, 
+        возвращается соответствующая ошибка.
+      operationId: cancelTicket
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор билета, который нужно вернуть.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passengerId:
+                  type: string
+                  description: Идентификатор пассажира (для валидации владения билетом).
+              required:
+                - passengerId
+      responses:
+        '200':
+          description: Билет успешно возвращён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                  status:
+                    type: string
+                    description: Статус операции ("returned").
+        '400':
+          description: Некорректные параметры запроса (нет passengerId, неверный формат).
+        '404':
+          description: Билет не найден или не принадлежит данному пассажиру.
+        '409':
+          description: Возврат невозможен, так как регистрация уже началась (BR-5).
+        '422':
+          description: Корректный формат параметров, но состояние билета не позволяет возврат 
+                       (он уже возвращён).
+        '500':
+          description: Внутренняя ошибка модуля «Покупка и возврат билетов».
+
+  /{ticketId}/status:
+    get:
+      tags:
+        - tickets
+      summary: Получение статуса билета
+      description: |
+        Возвращает текущий статус билета ("куплен", "возвращён", "зарегистрирован").
+      operationId: getTicketStatus
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор билета.
+      responses:
+        '200':
+          description: Статус билета успешно получен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                  status:
+                    type: string
+                    description: Текущий статус билета.
+        '404':
+          description: Билет не найден.
+
+  /{ticketId}/details:
+    get:
+      tags:
+        - tickets
+      summary: Получение деталей билета
+      description: |
+        Возвращает полную информацию о билете:
+          - Идентификатор пассажира
+          - Идентификатор рейса
+          - Направление рейса
+          - Время вылета
+          - Класс обслуживания
+          - Выбранный тип питания
+          - Признак багажа
+          - Текущий статус
+      operationId: getTicketDetails
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор билета.
+      responses:
+        '200':
+          description: Детали билета успешно получены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId:
+                    type: string
+                  passengerId:
+                    type: string
+                  flightId:
+                    type: string
+                  direction:
+                    type: string
+                    description: Маршрут (город вылета -> город прилёта) для указанного рейса.
+                  departureTime:
+                    type: string
+                    format: date-time
+                    description: Время вылета рейса.
+                  seatClass:
+                    type: string
+                    enum: [economy, business]
+                  mealType:
+                    type: string
+                    description: Код/название выбранного питания.
+                  baggage:
+                    type: string
+                    enum: [да, нет]
+                  status:
+                    type: string
+                    description: Текущий статус билета (например, "куплен" или "возвращён").
+        '404':
+          description: Билет не найден.
+
+  /flight/{flightId}/passengers:
+    get:
+      tags:
+        - tickets
+      summary: Получить список пассажиров по рейсу (для модуля «Регистрация»)
+      description: |
+         Модуль «Регистрация» вызывает этот метод, чтобы получить список всех пассажиров,у которых есть билет на указанный рейс (статус билета "куплен", т.е. не возвращён).
+      operationId: getPassengersForFlight
+      parameters:
+        - name: flightId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор рейса
+      responses:
+        '200':
+          description: Успешно возвращён список пассажиров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    passengerId:
+                      type: string
+                      description: Уникальный идентификатор пассажира
+                    seatClass:
+                      type: string
+                      enum: [economy, business]
+                      description: Класс обслуживания
+                    mealType:
+                      type: string
+                      description: Код/название выбранного питания
+                    baggage:
+                      type: string
+                      enum: [да, нет]
+                      description: Признак багажа
+        '400':
+          description: Неверные параметры (отсутствует flightId)
+        '404':
+          description: Рейс не найден или пассажиров нет
+        '408':
+          description: Тайм-аут при обращении к модулю «Покупка и возврат билетов»
+        '422':
+          description: Переданные данные не соответствуют ожидаемой схеме
+        '503':
+          description: Модуль временно недоступен (ошибка сервера или перегрузка)
