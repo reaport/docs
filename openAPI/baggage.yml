@@ -5,8 +5,8 @@ info:
   description: API для управления загрузкой и выгрузкой багажа 
 
 servers: 
-  - url: 'https://baggage.reaport.ru/' 
-    description: Production server 
+  - url: 'https://baggage.reaport.ru' 
+    description: Сервер для багажа
 
 paths: 
   /load: 
