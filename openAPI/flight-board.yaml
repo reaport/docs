@@ -6,29 +6,56 @@ info:
   version: 1.0.0
 
 paths:
-  /registration:
-    post:
-      summary: Обновление информации о регистрации
+  /register:
+    get:
+      summary: Получение информации о регистрации рейсов
       description: |
-        Метод для передачи информации о рейсах, на которые открыта регистрация.
-      operationId: UpdateRegistrationInfo
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FlightRegistrationInput'
+        Метод для получения информации о рейсах, на которые открыта регистрация.
+      operationId: GetRegistrationInfo
+      parameters:
+        - name: flightId
+          in: query
+          required: true
+          description: Номер рейса
+          schema:
+            type: string
+        - name: cityFrom
+          in: query
+          required: true
+          description: Город вылета
+        - name: cityTo
+          in: query
+          required: true
+          description: Город прилета
+          schema:
+            type: string
+        - name: registrationStartTime
+          in: query
+          required: true
+          description: Время начала регистрации
+          schema:
+            type: string
+        - name: registrationEndTime
+          in: query
+          required: true
+          description: Время окончания регистрации
+          schema:
+            type: string
       responses:
         '200':
-          description: Успешное обновление информации
+          description: Успешное получение информации
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FlightRegistrationResponse'
+                $ref: '#/components/schemas/FlightStatusRequest'
               examples:
-                ValidRequest:
+                ValidResponse:
                   value:
-                    status: "success"
+                    flightId: "SU123"
+                    cityFrom: "Мосипск"
+                    cityTo: "Москва"
+                    registrationStartTime: "2025-03-02T19:30:00Z"
+                    registrationEndTime: "2025-03-02T19:50:00Z"
         '400':
           description: Неверный запрос
           content:
@@ -39,11 +66,11 @@ paths:
                 MissingFlightNumber:
                   value:
                     errorCode: 100
-                    message: "FlightNumber is required"
+                    message: "FlightId is required"
                 InvalidFlightNumber:
                   value:
                     errorCode: 101
-                    message: "Invalid FlightNumber"
+                    message: "Invalid FlightID"
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -56,40 +83,121 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
-  /ticket-purchase:
-    post:
-      summary: Информирование о покупке билетов
+  /tickets:
+    get:
+      summary: Получение информации о покупке билетов
       description: |
-        Метод для передачи информации о рейсах, на которые открыта покупка билетов.
-      operationId: InformTicketPurchase
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TicketPurchaseInput'
+        Метод для получения информации о рейсах для модуля "Покупка и возврат билетов".
+      operationId: GetTicketPurchaseInfo
+      parameters:
+        - name: flightId
+          in: query
+          required: true
+          description: Идентификатор рейса, для которого требуется информация
+          schema:
+            type: string
+        - name: aircraftId
+          in: query
+          required: true
+          description: Идентификатор самолета, используемого для данного рейса
+          schema:
+            type: string
+        - name: cityFrom
+          in: query
+          required: true
+          description: Город вылета
+        - name: cityTo
+          in: query
+          required: true
+          description: Город прилета
+          schema:
+            type: string
+        - name: seatClass
+          in: query
+          required: true
+          description: Класс обслуживания
+          schema:
+            type: string
       responses:
         '200':
-          description: Успешная передача информации
+          description: Успешное получение информации о рейсе для покупки билетов
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TicketPurchaseResponse'
+                type: object
+                properties:
+                  availableSeats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        seatClass:
+                          type: string
+                          enum: [economy, business]
+                          description: Класс обслуживания
+                        seatCount:
+                          type: integer
+                          description: Количество мест для определенного класса обслуживания
+                  baggage:
+                    type: string
+                    description: Вместимость багажа
+                  takeoffDateTime:
+                    type: string
+                    format: date-time
+                    description: Время вылета
+                  landingDateTime:
+                    type: string
+                    format: date-time
+                    description: Время прилета
+                  flightId:
+                    type: string
+                    description: Идентификатор рейса
+                  aircraftId:
+                    type: string
+                    description: Идентификатор самолета
+                  cityFrom:
+                    type: string
+                    example: "Мосипск"
+                    description: Город вылета
+                  cityTo:
+                    type: string
+                    example: "Москва"
+                    description: Город прибытия
+
               examples:
-                ValidRequest:
+                ValidResponse:
                   value:
-                    status: "success"
+                    flightId: "FL123"
+                    aircraftId: "AC456"
+                    cityFrom: "Мосипск"
+                    cityTo: "Москва"
+                    availableSeats:
+                      - seatClass: "economy"
+                        seatCount: 50
+                      - seatClass: "business"
+                        seatCount: 20
+                    baggage: "да"
+                    takeoffDateTime: "2025-03-02T20:30:00Z"
+                    landingDateTime: "2025-03-02T21:00:00Z"
         '400':
-          description: Ошибка в запросе
+          description: Неверный запрос
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                MissingFlightNumber:
+                MissingFlightId:
                   value:
-                    errorCode: 100
-                    message: "FlightNumber is required"
+                    errorCode: 200
+                    message: "FlightId is required"
+                MissingAircraftId:
+                  value:
+                    errorCode: 201
+                    message: "AircraftId is required"
+                InvalidParameters:
+                  value:
+                    errorCode: 202
+                    message: "Invalid parameters provided"
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -102,32 +210,175 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
-    /boarding:
-    post:
-      summary: Обновление информации о рейсах
+  /aircraft-arrival:
+    get:
+      summary: Получение информации о прилетающем самолете
       description: |
-        Метод для передачи информации о существующих рейсах, посадки.
-      operationId: InformBoardingTime
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/BoardingTimeInput'
+        Метод для получения информации о прилетающем самолете.
+      operationId: GetAircraftArrivalInfo
+      parameters:
+        - name: landingDateTimeToReaport
+          in: query
+          required: true
+          description: Время прилета в reaport
+          schema:
+            type: string
+            format: date-time
+        - name: occupiedSeats
+          in: query
+          required: true
+          description: Количество занятых мест в прилетающем самолете
+          schema:
+            type: integer
+        - name: baggageToReaport
+          in: query
+          required: true
+          description: Вместимость багажа
+          schema:
+            type: string
       responses:
         '200':
-          description: Успешное обновление информации
+          description: Успешное получение информации о прилетающем самолете
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                type: object
+                properties:
+                  landingDateTimeToReaport:
+                    type: string
+                    format: date-time
+                    description: Время прилета самолета в reaport
+                  occupiedSeats:
+                    type: integer
+                    description: Количество занятых мест в прилетающем самолете
+                  baggageToReaport:
+                    type: string
+                    description: Вместимость багажа прилетающем самолете
+                  aircraftStatus:
+                    type: string
+                    description: Статус самолета (например, "Прибывает", "Прибыл")
               examples:
-                ValidRequest:
+                ValidResponse:
                   value:
-                    status: "success"
-                    message: "Boarding time updated successfully."
+                    landingDateTimeToReaport: "2025-03-02T21:00:00Z"
+                    occupiedSeats: 150
+                    baggageToReaport: "25 кг"
+                    aircraftStatus: "Прибыл"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                MissingArrivalTime:
+                  value:
+                    errorCode: 300
+                    message: "ArrivalTime is required"
+                InvalidOccupiedSeats:
+                  value:
+                    errorCode: 301
+                    message: "Invalid number of occupied seats"
+                InvalidBaggageToReaport:
+                  value:
+                    errorCode: 302
+                    message: "Invalid baggage capacity"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+  /aircraft-departure:
+    get:
+      summary: Получение информации о вылетающем самолете
+      description: |
+        Метод для получения информации о вылетающем самолете из аэропорта.
+      operationId: GetAircraftDepartureInfo
+      parameters:
+        - name: flightId
+          in: query
+          required: true
+          description: Номер рейса
+          schema:
+            type: string
+        - name: boardingStartTime
+          in: query
+          required: true
+          description: Время начала посадки
+          schema:
+            type: string
+            format: date-time
+        - name: boardingEndTime
+          in: query
+          required: true
+          description: Время окончания посадки
+          schema:
+            type: string
+            format: date-time
+        - name: boughtSeats
+          in: query
+          required: true
+          description: Количество купленных мест с указанием типа сидений (эконом, бизнес)
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                seatClass:
+                  type: string
+                  enum: ["economy", "business"]
+                  description: Класс обслуживания
+                quantity:
+                  type: integer
+                  description: Количество купленных мест для данного типа сидения
+      responses:
+        '200':
+          description: Успешное получение информации о вылетающем самолете
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  flightId:
+                    type: string
+                    description: Номер рейса
+                  boardingStartTime:
+                    type: string
+                    format: date-time
+                    description: Время начала посадки
+                  boardingEndTime:
+                    type: string
+                    format: date-time
+                    description: Время окончания посадки
+                  boughtSeats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        seatClass:
+                          type: string
+                          description: Тип сидения
+                        quantity:
+                          type: integer
+                          description: Количество купленных мест
+              examples:
+                ValidResponse:
+                  value:
+                    flightId: "FL456"
+                    boardingStartTime: "2025-03-02T19:45:00Z"
+                    boardingEndTime: "2025-03-02T20:15:00Z"
+                    boughtSeats:
+                      - seatType: "economy"
+                        seatCount: 120
+                      - seatType: "business"
+                        seatCount: 30
         '400':
           description: Неверный запрос
           content:
@@ -137,12 +388,16 @@ paths:
               examples:
                 MissingFlightNumber:
                   value:
-                    errorCode: 100
-                    message: "FlightNumber is required."
-                InvalidBoardingTime:
+                    errorCode: 400
+                    message: "FlightId is required"
+                InvalidBoardingTimes:
                   value:
-                    errorCode: 101
-                    message: "Invalid boarding time format."
+                    errorCode: 401
+                    message: "Invalid boarding times provided"
+                InvalidBoughtSeats:
+                  value:
+                    errorCode: 402
+                    message: "Invalid bought seats format"
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -153,96 +408,370 @@ paths:
                 InternalServerError:
                   value:
                     errorCode: 500
-                    message: "Internal server error occurred."
+                    message: "InternalServerError"
+
+  /aircraft-departure:
+    post:
+      summary: Сохранение данных о вылетающем самолете
+      description: |
+        Метод для сохранения информации о вылетающем самолете из аэропорта.
+      operationId: SaveAircraftDepartureInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                aircraftId:
+                  type: string
+                  description: Номер самолета
+                availableSeats:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      seatClass:
+                        type: string
+                        enum: ["economy", "business"]
+                        description: Класс обслуживания
+                      seatsCount:
+                        type: integer
+                        description: Количество доступных мест для определенного класса обслуживания
+                baggage:
+                  type: string
+                  description: Вместимость багажа
+              required:
+                - aircraftId
+                - availableSeats
+                - baggage
+      responses:
+        '200':
+          description: Успешное сохранение данных о самолете
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Aircraft departure info saved successfully"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                MissingAircraftId:
+                  value:
+                    errorCode: 500
+                    message: "AircraftId is required"
+                InvalidSeatsData:
+                  value:
+                    errorCode: 501
+                    message: "Invalid available seats data"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
+
+  /tickets:
+    post:
+      summary: Сохранение данных о покупке билетов
+      description: |
+        Метод для сохранения информации о купленных билетах, включая количество мест и признак багажа.
+      operationId: SaveTicketPurchaseInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                purchasedSeats:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      seatClass:
+                        type: string
+                        enum: ["economy", "business"]
+                        description: Класс обслуживания
+                      quantity:
+                        type: integer
+                        description: Количество купленных мест для определенного класса обслуживания
+                baggage:
+                  type: string
+                  description: Вместимость багажа
+              required:
+                - purchasedSeats
+                - baggage
+      responses:
+        '200':
+          description: Успешное сохранение данных о покупке билетов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Ticket purchase info saved successfully"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                MissingPurchasedSeats:
+                  value:
+                    errorCode: 600
+                    message: "PurchasedSeats is required"
+                InvalidSeatsData:
+                  value:
+                    errorCode: 601
+                    message: "Invalid purchased seats data"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
 
 components:
   schemas:
-    FlightRegistrationInput:
+    FlightStatusRequest:
       type: object
       properties:
-        flightNumber:
+        flightId:
           type: string
-          description: Номер рейса для открытия регистрации.
-      required:
-        - flightNumber
-
-    FlightRegistrationResponse:
-      type: object
-      properties:
-        status:
+          description: Идентификатор рейса
+        cityFrom:
           type: string
-          description: Статус выполнения операции.
-      required:
-        - status
-
-    TicketPurchaseInput:
-      type: object
-      properties:
-        flightNumber:
+          description: Город вылета
+        cityTo:
           type: string
-          description: Номер рейса, на который открыта продажа билетов.
-      required:
-        - flightNumber
-
-    TicketPurchaseResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          description: Статус выполнения операции.
-      required:
-        - status
-
-    FlightStartInput:
-      type: object
-      properties:
-        flightNumber:
-          type: string
-          description: Номер рейса, уведомляющий о его начале.
-        startTime:
+          description: Город прилета
+        registrationStartTime:
           type: string
           format: date-time
-          description: Время начала рейса.
-      required:
-        - flightNumber
-        - startTime
-
-    BoardingTimeInput:
-      type: object
-      properties:
-        flightNumber:
-          type: string
-          description: Номер рейса.
-        purchaseOpen:
+          description: Время начала регистрации
+        registrationEndTime:
           type: string
           format: date-time
-          description: Дата и время открытия посадки.
-      required:
-        - flightNumber
-        - boardingTime
+          description: Время окончания регистрации
 
-    SuccessResponse:
+    TicketPurchaseInfo:
+      type: object
+      properties:
+        availableSeats:
+          type: array
+          items:
+            type: object
+            properties:
+              seatClass:
+                type: string
+                enum: [economy, business]
+                description: Класс обслуживания
+              seatCount:
+                type: integer
+                description: Количество мест для определенного класса обслуживания
+        baggage:
+          type: string
+          enum: [да, нет]
+          description: Признак наличия багажа
+        takeoffDateTime:
+          type: string
+          format: date-time
+          description: Время вылета
+        landingDateTime:
+          type: string
+          format: date-time
+          description: Время прилета
+        flightId:
+          type: string
+          description: Идентификатор рейса
+        aircraftId:
+          type: string
+          description: Идентификатор самолета
+        cityFrom:
+          type: string
+          example: "Мосипск"
+          description: Город вылета
+        cityTo:
+          type: string
+          example: "Москва"
+          description: Город прибытия
+
+    AircraftArrivalInfo:
+      type: object
+      properties:
+        landingDateTimeToReaport:
+          type: string
+          format: date-time
+          description: Время прилета самолета в reaport
+        occupiedSeats:
+          type: integer
+          description: Количество занятых мест в прилетающем самолете
+        baggageToReaport:
+          type: string
+          description: Вместимость багажа в прилетающем самолете
+        aircraftStatus:
+          type: string
+          description: Статус самолета (например, "Прибывает", "Прибыл")
+
+    AircraftDepartureInfoRequest:
+      type: object
+      required:
+        - flightId
+        - boardingStartTime
+        - boardingEndTime
+        - boughtSeats
+      properties:
+        flightId:
+          type: string
+          description: Номер рейса
+        boardingStartTime:
+          type: string
+          format: date-time
+          description: Время начала посадки
+        boardingEndTime:
+          type: string
+          format: date-time
+          description: Время окончания посадки
+        boughtSeats:
+          type: array
+          items:
+            type: object
+            properties:
+              seatClass:
+                type: string
+                enum: ["economy", "business"]
+                description: Класс обслуживания
+              quantity:
+                type: integer
+                description: Количество купленных мест для данного типа сидения
+
+    AircraftDepartureInfoResponse:
+      type: object
+      properties:
+        flightId:
+          type: string
+          description: Номер рейса
+        boardingStartTime:
+          type: string
+          format: date-time
+          description: Время начала посадки
+        boardingEndTime:
+          type: string
+          format: date-time
+          description: Время окончания посадки
+        boughtSeats:
+          type: array
+          items:
+            type: object
+            properties:
+              seatClass:
+                type: string
+                description: Тип сидения
+              quantity:
+                type: integer
+                description: Количество купленных мест
+
+    SaveAircraftDepartureInfoRequest:
+      type: object
+      required:
+        - aircraftId
+        - availableSeats
+        - baggage
+      properties:
+        aircraftId:
+          type: string
+          description: Номер самолета
+        availableSeats:
+          type: array
+          items:
+            type: object
+            properties:
+              seatClass:
+                type: string
+                enum: ["economy", "business"]
+                description: Класс обслуживания
+              seatsCount:
+                type: integer
+                description: Количество доступных мест для определенного класса обслуживания
+        baggage:
+          type: string
+          description: Вместимость багажа
+
+    SaveAircraftDepartureInfoResponse:
       type: object
       properties:
         status:
           type: string
-          description: Статус выполнения действия.
+          example: "success"
         message:
           type: string
-          description: Сообщение, подтверждающее успешное выполнение действия.
+          example: "Aircraft departure info saved successfully"
+
+    SaveTicketPurchaseInfoRequest:
+      type: object
       required:
-        - status
-        - message
+        - purchasedSeats
+        - baggage
+      properties:
+        purchasedSeats:
+          type: array
+          items:
+            type: object
+            properties:
+              seatClass:
+                type: string
+                enum: ["economy", "business"]
+                description: Класс обслуживания
+              quantity:
+                type: integer
+                description: Количество купленных мест для данного типа сидения
+        baggage:
+          type: string
+          description: Наличие багажа
+
+    SaveTicketPurchaseInfoResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        message:
+          type: string
+          example: "Ticket purchase info saved successfully"
 
     ErrorResponse:
       type: object
       properties:
         errorCode:
           type: integer
-          description: Код ошибки.
+          description: Код ошибки
         message:
           type: string
-          description: Сообщение об ошибке.
-      required:
-        - errorCode
-        - message
+          description: Описание ошибки
