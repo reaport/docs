@@ -93,7 +93,85 @@ paths:
                   value:
                     errorCode: 500
                     message: "InternalServerError"
+                    
+/admin/config:
+    get:
+      summary: Получить текущую конфигурацию админки
+      tags:
+        - admin
+      operationId: GetAdminConfig
+      responses:
+        '200':
+          description: Текущая конфигурация параметров зарядки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminConfig'
 
+    post:
+      summary: Обновить параметры конфигурации
+      tags:
+        - admin
+      operationId: UpdateAdminConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminConfig'
+      responses:
+        '200':
+          description: Конфигурация успешно обновлена
+        '400':
+          description: Ошибка в параметрах
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
+
+  /admin/vehicles:
+    get:
+      summary: Получить список зарегистрированных транспортных средств
+      tags:
+        - admin
+      operationId: GetVehiclesList
+      responses:
+        '200':
+          description: Список машин и их статус
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChargingVehicleInfo'
+
+  /admin/registerVehicle:
+    post:
+      summary: Зарегистрировать новую машину
+      tags:
+        - admin
+      operationId: RegisterVehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: Тип транспортного средства (например, charging)
+              required:
+                - type
+      responses:
+        '200':
+          description: Машина успешно зарегистрирована
+        '400':
+          description: Ошибка регистрации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
 components:
   schemas:
     ChargingRequest:
@@ -135,3 +213,34 @@ components:
       required:
         - errorCode
         - message
+
+    AdminConfig:
+      type: object
+      properties:
+        MovementSpeed:
+          type: number
+          format: float
+          description: Скорость передвижения машин (ед./сек)
+        ConflictRetryCount:
+          type: integer
+          description: Количество попыток при конфликте маршрутов
+      required:
+        - MovementSpeed
+        - ConflictRetryCount
+
+    ChargingVehicleInfo:
+      type: object
+      properties:
+        VehicleId:
+          type: string
+          description: Идентификатор транспортного средства
+        Status:
+          type: string
+          description: Статус (Свободно / Занято)
+        CurrentNode:
+          type: string
+          description: Текущий узел расположения машины
+      required:
+        - VehicleId
+        - Status
+        - CurrentNode
