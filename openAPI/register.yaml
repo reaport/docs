@@ -97,6 +97,14 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: "Internal server error"
+        '502':
+          description: Ошибка получения пассажиов на рейс
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "failed get passengers in the ticket  module for this flight"          
 
 components:
   schemas:
