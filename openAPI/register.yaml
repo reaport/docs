@@ -35,21 +35,10 @@ paths:
               examples:
                 validError:
                   value:
-                    error: "Validation error"
-                wrongFood:
-                  value:
-                    error: "Wrong type of food"
+                    error: "validation errors"
                 wrongBaggage:
                   value:
-                    error: "Exceeding the allowed baggage size"
-        '403':
-          description: Регистрация не доступна
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "Registration is not available"
+                    error: "exceeding the allowed baggage size"
         '404':
           description: Пассажир не найден
           content:
@@ -57,7 +46,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "The passenger was not found"
+                error: "the passenger was not found for registration"
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -65,7 +54,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Internal server error"
+                error: "internal server errors"
 
   /flights:
     post:
@@ -88,7 +77,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Validation error"
+                error: "validation errors"
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -96,7 +85,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Internal server error"
+                error: "internal server errors"
         '502':
           description: Ошибка получения пассажиов на рейс
           content:
@@ -124,12 +113,12 @@ components:
         mealOption:
           type: string
           nullable: true
-          enum: [да, нет]  # Тип питания как enum
+          enum: ["Standard", "Vegetarian", "Vegan", "Gluten-Free"] # Тип питания как enum
           description: Новый тип питания
       example:
         passengerId: "123e4567-e89b-12d3-a456-426614174000"
-        baggageWeight: 23.5
-        mealOption: "да"
+        baggageWeight: 12.5
+        mealOption: "Standard"
 
     RegisterPassengerResponse:
       type: object
