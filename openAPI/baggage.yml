@@ -19,18 +19,18 @@ paths:
             schema: 
               type: object 
               required: 
-                - aircraft_id 
-                - baggage_weight 
-                - aircraft coordinates 
+                - AircraftId 
+                - BaggageWeight
+                - AircraftCoordinates 
               properties: 
-                aircraft_id: 
+                AircraftId: 
                   type: string 
                   description: Идентификатор самолёта 
-                baggage_weight: 
+                BaggageWeight: 
                   type: number 
                   format: double
                   description: Количество багажа пассажиров (в кг) 
-                aircraft coordinates: 
+                AircraftCoordinates: 
                   type: string
                   description: Координаты самолёта 
       responses: 
@@ -41,7 +41,7 @@ paths:
               schema: 
                 type: object 
                 properties: 
-                  waiting: 
+                  Waiting: 
                     type: boolean
                     description: true, если свободных машин нет, иначе false
         '400': 
@@ -74,18 +74,18 @@ paths:
             schema: 
               type: object 
               required: 
-                - aircraft_id 
-                - baggage_weight 
-                - aircraft coordinates 
+                - AircraftId 
+                - BaggageWeight 
+                - AircraftCoordinates 
               properties: 
-                aircraft_id: 
+                AircraftId: 
                   type: string 
                   description: Идентификатор самолёта 
-                baggage_weight: 
+                BaggageWeight: 
                   type: number 
                   format: double
                   description: Количество багажа на самолёте (в кг) 
-                aircraft coordinates: 
+                AircraftCoordinates: 
                   type: string
                   description: Координаты самолёта 
       responses: 
@@ -96,7 +96,7 @@ paths:
               schema: 
                 type: object 
                 properties: 
-                  waiting: 
+                  Waiting: 
                     type: boolean
                     description: true, если свободных машин нет, иначе false
         '400': 
