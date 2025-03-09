@@ -187,48 +187,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /admin/cars/remove:
-    post:
-      summary: Удалить машину
-      description: Удаляет машину по её внутреннему ID.
-      tags:
-        - Admin
-      operationId: RemoveCar
-      parameters:
-        - name: internalId
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Внутренний ID машины.
-      responses:
-        '200':
-          description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RemoveCarResponse'
-              examples:
-                CarRemoved:
-                  value:
-                    Message: "Машина 0000000-60bc-464d-8759-c04b79c25b25 удалена!"
-        '404':
-          description: Машина не найдена
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                CarNotFound:
-                  value:
-                    Message: "Машина с ID 0000000-60bc-464d-8759-c04b79c25b25 не найдена!"
-        '500':
-          description: Внутренняя ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /admin/logs:
     get:
       summary: Получить логи
@@ -389,16 +347,7 @@ components:
           description: Сообщение о добавлении машины.
       required:
         - Message
-
-    RemoveCarResponse:
-      type: object
-      properties:
-        Message:
-          type: string
-          description: Сообщение об удалении машины.
-      required:
-        - Message
-
+        
     ErrorResponse:
       type: object
       properties:
