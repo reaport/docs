@@ -2,10 +2,14 @@ openapi: 3.0.0
 info:
   title: Transporter API
   version: 1.0.0
-  description: API для управления посадкой и высадкой пассажиров для аэропорта
+  description: API для управления посадкой и высадкой пассажиров
+
+servers:
+  - url: 'https://transporter.reaport.ru'
+    description: Сервер для транспорта
 
 paths:
-  /transporter/board:
+  /load:
     post:
       summary: Запрос на посадку пассажиров
       requestBody:
@@ -15,21 +19,20 @@ paths:
             schema:
               type: object
               required:
-                - transporter_id
+                - aircraft_id 
                 - passenger_count
-                - vehicle_coordinates
+                - aircraft_coordinates
               properties:
-                transporter_id:
-                  type: string
-                  description: Идентификатор транспортного средства
+                aircraft_id: 
+                  type: string 
+                  description: Идентификатор самолёта 
                 passenger_count:
                   type: number
                   format: integer
                   description: Количество пассажиров для посадки
-                vehicle_coordinates:
-                  type: number
-                  format: integer
-                  description: Координаты транспортного средства
+                aircraft_coordinates: 
+                  type: string
+                  description: Координаты самолёта 
       responses:
         '200':
           description: Успешный запрос
@@ -40,7 +43,7 @@ paths:
                 properties:
                   waiting:
                     type: boolean
-                    description: true, если свободных машин нет, иначе false
+                    description: true, если свободных транспортных средств нет, иначе false
         '400':
           description: Неверный запрос
           content:
@@ -62,7 +65,7 @@ paths:
                     type: string
                     description: Описание ошибки
 
-  /transporter/disembark:
+  /upload:
     post:
       summary: Запрос на высадку пассажиров
       requestBody:
@@ -72,21 +75,20 @@ paths:
             schema:
               type: object
               required:
-                - transporter_id
+                - aircraft_id
                 - passenger_count
-                - vehicle_coordinates
+                - aircraft_coordinates
               properties:
-                transporter_id:
-                  type: string
-                  description: Идентификатор транспортного средства
+                aircraft_id: 
+                  type: string 
+                  description: Идентификатор самолёта 
                 passenger_count:
                   type: number
                   format: integer
                   description: Количество пассажиров для высадки
-                vehicle_coordinates:
-                  type: number
-                  format: integer
-                  description: Координаты транспортного средства
+                aircraft_coordinates: 
+                  type: string
+                  description: Координаты самолёта 
       responses:
         '200':
           description: Успешный запрос
@@ -97,7 +99,7 @@ paths:
                 properties:
                   waiting:
                     type: boolean
-                    description: true, если свободных машин нет, иначе false
+                    description: true, если свободных транспортных средств нет, иначе false
         '400':
           description: Неверный запрос
           content:
@@ -118,3 +120,50 @@ paths:
                   error:
                     type: string
                     description: Описание ошибки
+
+  /getCapacity:
+    get:
+      summary: Получить текущую вместимость транспортного средства
+      operationId: getVehicleCapacity
+      responses:
+        '200':
+          description: Успешный ответ с текущей вместимостью
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capacity:
+                    type: number
+                    format: integer
+                    description: Текущая вместимость транспортного средства
+
+  /updateCapacity:
+    post:
+      summary: Обновить вместимость транспортного средства
+      operationId: setVehicleCapacity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                capacity:
+                  type: number
+                  format: integer
+                  description: Новая вместимость транспортного средства
+      responses:
+        '200':
+          description: Успешное обновление вместимости
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capacity:
+                    type: number
+                    format: integer
+                    description: Обновленная вместимость транспортного средства
+        '400':
+          description: Некорректное значение вместимости
