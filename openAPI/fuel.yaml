@@ -66,6 +66,68 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
+  # Методы админки
+  /admin:
+    get:
+      summary: Отобразить административную панель
+      description: Возвращает HTML-страницу административной панели с возможностью настройки параметров и просмотра списка транспортных средств.
+      tags:
+        - admin
+      operationId: admin_getPanel
+      responses:
+        '200':
+          description: HTML-страница админки
+
+  /admin/update-parameters:
+    post:
+      summary: Обновить конфигурационные параметры
+      description: Обновляет глобальные параметры, такие как скорость движения и количество повторных попыток при конфликте.
+      tags:
+        - admin
+      operationId: admin_updateParameters
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                vehicleSpeed:
+                  type: integer
+                  description: Скорость движения (ед/сек)
+                conflictRetryCount:
+                  type: integer
+                  description: Количество повторных попыток при конфликте
+              required:
+                - vehicleSpeed
+                - conflictRetryCount
+      responses:
+        '302':
+          description: Параметры успешно обновлены, происходит перенаправление на панель.
+
+  /admin/register:
+    post:
+      summary: Зарегистрировать новое транспортное средство
+      description: Регистрирует новое транспортное средство через административную панель.
+      tags:
+        - admin
+      operationId: admin_registerVehicle
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                vehicleType:
+                  type: string
+                  description: Тип транспортного средства (например, "refueling")
+              required:
+                - vehicleType
+      responses:
+        '302':
+          description: Транспортное средство успешно зарегистрировано, происходит перенаправление на панель.
+
 components:
   schemas:
     RequestRefuelingInput:
@@ -86,7 +148,7 @@ components:
       properties:
         wait:
           type: boolean
-          description: Сообщение о наличии свободных машин.
+          description: Флаг, указывающий, что необходимо ожидание свободных машин.
       required:
         - wait
 
