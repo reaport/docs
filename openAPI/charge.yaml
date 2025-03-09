@@ -9,6 +9,10 @@ servers:
   - url: https://charge.reaport.ru
     description: Сервер для зарядки самолёта
 
+tags:
+  - name: admin
+    description: Методы для управления конфигурацией и транспортными средствами
+
 paths:
   /request:
     post:
@@ -93,8 +97,9 @@ paths:
                   value:
                     errorCode: 500
                     message: "InternalServerError"
-                    
-/admin/config:
+
+  # Методы админки
+  /admin/config:
     get:
       summary: Получить текущую конфигурацию админки
       tags:
@@ -172,6 +177,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChargingErrorResponse'
+
 components:
   schemas:
     ChargingRequest:
