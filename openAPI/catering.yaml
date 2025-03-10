@@ -4,7 +4,7 @@ info:
   description: |
     API для управления процессом доставки питания (кейтеринг).
     При запросе машины кейтеринга модуль Регистрации передаёт:
-      - FlightId: идентификатор рейса.
+      - AircraftId: идентификатор самолёта.
       - Meals: массив заказов, где для каждого типа питания указывается количество порций.
   version: "1.0.0"
   
@@ -22,7 +22,7 @@ paths:
       summary: "Запрос на доставку питания"
       description: |
         Оркестратор инициирует доставку питания, передавая следующие данные:
-          - FlightId: идентификатор рейса.
+          - AircraftId: идентификатор самолёта.
           - Meals: массив объектов, где для каждого типа питания (например, "Standard", "Vegetarian", "Vegan", "Gluten-Free")
                     указывается количество порций, передаваемое модулем Регистрации.
       operationId: RequestCatering
@@ -184,7 +184,7 @@ components:
           items:
             $ref: '#/components/schemas/MealOrder'
       required:
-        - FlightId
+        - AircraftId
         - Meals
 
     MealOrder:
