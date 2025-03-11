@@ -85,6 +85,21 @@ paths:
         '200':
           description: Успешный запрос
 
+  /map/config:
+    get:
+      summary: Получить конфигурацию карты аэропорта
+      description: Возвращает конфигурацию аэропорта.
+      tags:
+        - map
+      operationId: map_getAirportMapConfig
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirportMapConfig'
+
   /route:
     post:
       summary: Запросить маршрут
@@ -333,6 +348,15 @@ components:
       required:
         - nodes
         - edges
+    AirportMapConfig:
+      type: object
+      properties:
+        airstripNodeId:
+          type: string
+          description: ID узла взлетно-посадочной полосы
+          example: "airstrip"
+      required:
+        - airstripNodeId
 
     Node:
       type: object
