@@ -16,7 +16,7 @@ paths:
       description: |
         После высадки пассажиров оркестратор отправляет запрос на заправку.
         Если количество топлива меньше 0, его значение обрабатывается как 0, и заправка не требуется.
-        В процессе обработки запроса производится проверка наличия свободных машин. Если свободные машины отсутствуют, возвращается соответствующая ошибка.
+        В процессе обработки запроса производится проверка наличия свободных машин. Если свободные машины отсутствуют, возвращаем уведомление о необходимости ожидания.
       operationId: RequestRefueling
       requestBody:
         required: true
@@ -81,7 +81,7 @@ paths:
   /admin/update-parameters:
     post:
       summary: Обновить конфигурационные параметры
-      description: Обновляет глобальные параметры, такие как скорость движения и количество повторных попыток при конфликте.
+      description: Обновляет глобальные параметры, такие как количество повторных попыток при конфликте.
       tags:
         - admin
       operationId: admin_updateParameters
@@ -92,18 +92,14 @@ paths:
             schema:
               type: object
               properties:
-                vehicleSpeed:
-                  type: integer
-                  description: Скорость движения (ед/сек)
                 conflictRetryCount:
                   type: integer
                   description: Количество повторных попыток при конфликте
               required:
-                - vehicleSpeed
                 - conflictRetryCount
       responses:
-        '302':
-          description: Параметры успешно обновлены, происходит перенаправление на панель.
+        '200':
+          description: Параметры успешно обновлены.
 
   /admin/register:
     post:
@@ -125,8 +121,8 @@ paths:
               required:
                 - vehicleType
       responses:
-        '302':
-          description: Транспортное средство успешно зарегистрировано, происходит перенаправление на панель.
+        '200':
+          description: Транспортное средство успешно зарегистрировано.
 
 components:
   schemas:
@@ -139,9 +135,13 @@ components:
         FuelNeeded:
           type: integer
           description: Количество топлива, необходимое для заправки (в литрах). Может быть 0 или больше.
+        AirplaneId:
+          type: string
+          description: Идентификатор самолёта.
       required:
         - NodeId
         - FuelNeeded
+        - AirplaneId
 
     RequestRefuelingResponse:
       type: object
