@@ -124,6 +124,17 @@ paths:
         '200':
           description: Транспортное средство успешно зарегистрировано.
 
+  /admin/restart:
+    post:
+      summary: Перезагрузка приложения
+      description: Перезапускает приложение
+      tags:
+        - admin
+      operationId: admin_restart
+      responses:
+        '200':
+          description: Приложение перезапущено.
+
 components:
   schemas:
     RequestRefuelingInput:
