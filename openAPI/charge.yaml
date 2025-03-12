@@ -2,12 +2,16 @@ openapi: 3.0.0
 info:
   title: Charge API
   description: |
-    API для управления процессом зарядки самолетов. Для подробной информации смотрите [документацию](https://docs.google.com/document/d/1-A99pLnf-T3KJgUowspAIestsUUSzbDQ0Sfr5KvSmdI/edit?tab=t.7lbm2zu22odb).
+    API для управления процессом зарядки самолетов.
   version: 1.0.0
 
 servers:
   - url: https://charge.reaport.ru
-    description: Сервер для зарядки самолёта
+    description: Сервер для зарядки самолетов
+
+tags:
+  - name: admin
+    description: Методы для управления конфигурацией и транспортными средствами
 
 paths:
   /request:
@@ -15,6 +19,7 @@ paths:
       summary: Запрос на зарядку
       description: |
         Когда самолет на парковочном месте, оркестратор отправляет запрос на зарядку.
+        После успешного назначения машины система отправляет уведомление в оркестратор.
       operationId: RequestCharging
       requestBody:
         required: true
@@ -29,38 +34,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChargingResponse'
-              examples:
-                ValidRequest:
-                  value:
-                    wait: true
         '400':
-          description: Неверный запрос
+          description: Неверный запрос (отсутствует `Aircraft_id` или `NodeId`)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChargingErrorResponse'
-              examples:
-                MissingNodeId:
-                  value:
-                    errorCode: 100
-                    message: "NodeId is required"
+        '404':
+          description: Самолёт не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChargingErrorResponse'
-              examples:
-                InternalServerError:
-                  value:
-                    errorCode: 500
-                    message: "InternalServerError"
 
   /complete:
     post:
       summary: Завершение зарядки
       description: |
-        Оркестратор отправляет запрос на прекращение зарядки, когда кейтеринг выполнен.
+        Оркестратор отправляет запрос на завершение зарядки после выполнения всех операций.
       operationId: CompleteCharging
       requestBody:
         required: true
@@ -70,56 +67,131 @@ paths:
               $ref: '#/components/schemas/ChargingCompletionRequest'
       responses:
         '204':
-          description: Успешный ответ
+          description: Успешный ответ. Зарядка завершена.
         '400':
-          description: Неверный запрос
+          description: Неверный запрос (отсутствует `Aircraft_id` или `NodeId`)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChargingErrorResponse'
-              examples:
-                MissingNodeId:
-                  value:
-                    errorCode: 100
-                    message: "NodeId is required"
+        '404':
+          description: Самолёт не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChargingErrorResponse'
-              examples:
-                InternalServerError:
-                  value:
-                    errorCode: 500
-                    message: "InternalServerError"
+
+  /admin/update:
+    post:
+      summary: Обновить параметры конфигурации
+      description: |
+        Обновляет параметры конфигурации системы зарядки.
+      tags:
+        - admin
+      operationId: UpdateAdminConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminConfig'
+      responses:
+        '200':
+          description: Конфигурация успешно обновлена
+        '400':
+          description: Ошибка в параметрах
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
+
+  /admin/registerVehicle:
+    post:
+      summary: Зарегистрировать новую машину
+      description: |
+        Регистрирует новое транспортное средство для зарядки самолетов.
+      tags:
+        - admin
+      operationId: RegisterVehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: Тип транспортного средства (например, charging).
+              required:
+                - type
+      responses:
+        '200':
+          description: Машина успешно зарегистрирована
+        '400':
+          description: Ошибка регистрации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
+
+  /admin/reload:
+    post:
+      summary: Полная перезагрузка приложения
+      description: Полностью сбрасывает текущее состояние Charge API
+      tags:
+        - admin
+      operationId: ReloadApplication
+      responses:
+        '200':
+          description: Приложение успешно перезагружено и все данные сброшены.
+        '500':
+          description: Внутренняя ошибка сервера при перезагрузке.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
 
 components:
   schemas:
     ChargingRequest:
       type: object
       properties:
-        NodeId:
+        aircraft_id:
           type: string
-          description: Идентификатор узла самолета (например, "node1").
+          description: Уникальный идентификатор самолета.
+        nodeId:
+          type: string
+          description: Идентификатор узла парковки самолета.
       required:
-        - NodeId
+        - aircraft_id
+        - nodeId
 
     ChargingCompletionRequest:
       type: object
       properties:
-        NodeId:
+        aircraft_id:
           type: string
-          description: Идентификатор узла самолета (например, "node1").
+          description: Уникальный идентификатор самолета.
+        nodeId:
+          type: string
+          description: Идентификатор узла парковки самолета.
       required:
-        - NodeId
+        - aircraft_id
+        - nodeId
 
     ChargingResponse:
       type: object
       properties:
         wait:
           type: boolean
-          description: Сообщение о наличии свободных машин.
+          description: true - нет доступных машин.
       required:
         - wait
 
@@ -131,7 +203,16 @@ components:
           description: Код ошибки.
         message:
           type: string
-          description: Сообщение об ошибке.
+          description: Описание ошибки.
       required:
         - errorCode
         - message
+
+    AdminConfig:
+      type: object
+      properties:
+        ConflictRetryCount:
+          type: integer
+          description: Количество попыток при конфликте маршрутов.
+      required:
+        - ConflictRetryCount
