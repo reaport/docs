@@ -12,6 +12,8 @@ servers:
 tags:
   - name: follow-me
     description: "Вызов машины сопровождения"
+  - name: Admin
+    description: "Ручки для работы админки"
 
 paths:
   /get_car:
@@ -41,7 +43,7 @@ paths:
                 ValidRequest:
                   value:
                     CarId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-                    TimeToWait: 10
+                    Wait: false
         '400':
           description: Неверный запрос
           content:
@@ -126,6 +128,125 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
+  /admin/cars:
+    get:
+      summary: Получить список всех машин
+      description: Возвращает список всех машин, зарегистрированных в системе.
+      tags:
+        - Admin
+      operationId: GetCars
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+              examples:
+                CarsList:
+                  value:
+                    - InternalId: "0000000-60bc-464d-8759-c04b79c25b25"
+                      ExternalId: ""
+                      Status: "Available"
+                      CurrentNode: "Garage"
+                    - InternalId: "1111111-60bc-464d-8759-c04b79c25b25"
+                      ExternalId: "abc123"
+                      Status: "Busy"
+                      CurrentNode: "A1"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/cars/add:
+    post:
+      summary: Добавить новую машину
+      description: Добавляет новую машину в систему.
+      tags:
+        - Admin
+      operationId: AddCar
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddCarResponse'
+              examples:
+                CarAdded:
+                  value:
+                    Message: "Машина 0000000-60bc-464d-8759-c04b79c25b25 добавлена!"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/logs:
+    get:
+      summary: Получить логи
+      description: Возвращает список всех логов системы.
+      tags:
+        - Admin
+      operationId: GetLogs
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              examples:
+                LogsList:
+                  value:
+                    - "2023-10-01T12:34:56 | INFO | Машина добавлена"
+                    - "2023-10-01T12:35:10 | ERROR | Ошибка при чтении логов"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/audit:
+    get:
+      summary: Получить аудит
+      description: Возвращает список всех записей аудита.
+      tags:
+        - Admin
+      operationId: GetAudit
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditEntry'
+              examples:
+                AuditList:
+                  value:
+                    - Timestamp: "2023-10-01T12:34:56"
+                      CarId: "0000000-60bc-464d-8759-c04b79c25b25"
+                      Movement: "Машина добавлена"
+                    - Timestamp: "2023-10-01T12:35:10"
+                      CarId: "1111111-60bc-464d-8759-c04b79c25b25"
+                      Movement: "Машина удалена"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     WeNeedFollowMeRequest:
@@ -195,3 +316,61 @@ components:
       required:
         - errorCode
         - message
+
+    Car:
+      type: object
+      properties:
+        InternalId:
+          type: string
+          description: Внутренний ID машины.
+        ExternalId:
+          type: string
+          description: Внешний ID машины.
+        Status:
+          type: string
+          enum: [Available, Busy]
+          description: Статус машины.
+        CurrentNode:
+          type: string
+          description: Текущее местоположение машины.
+      required:
+        - InternalId
+        - ExternalId
+        - Status
+        - CurrentNode
+
+    AddCarResponse:
+      type: object
+      properties:
+        Message:
+          type: string
+          description: Сообщение о добавлении машины.
+      required:
+        - Message
+        
+    ErrorResponse:
+      type: object
+      properties:
+        Message:
+          type: string
+          description: Сообщение об ошибке.
+      required:
+        - Message
+
+    AuditEntry:
+      type: object
+      properties:
+        Timestamp:
+          type: string
+          format: date-time
+          description: Время записи аудита.
+        CarId:
+          type: string
+          description: ID машины.
+        Movement:
+          type: string
+          description: Описание действия.
+      required:
+        - Timestamp
+        - CarId
+        - Movement
