@@ -24,7 +24,7 @@ paths:
       summary: "Запрос на доставку питания"
       description: |
         Оркестратор (или любой внешний сервис) инициирует доставку питания, передавая:
-          - FlightId (идентификатор рейса)
+          - AircraftId (идентификатор самолёта)
           - NodeId (необязательно, узел назначения)
           - Meals (список объектов, где указывается тип питания и количество порций)
       operationId: RequestCatering
@@ -305,10 +305,10 @@ components:
       properties:
         AircraftId:
           type: string
-          description: "Идентификатор рейса"
+          description: "Идентификатор самолёта"
         NodeId:
           type: string
-          description: "Идентификатор узла (необязательно)"
+          description: "Идентификатор узла"
         Meals:
           type: array
           items:
