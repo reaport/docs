@@ -2,183 +2,254 @@ openapi: 3.0.0
 info:
   title: "Catering API"
   description: |
-    API для управления процессом доставки питания (кейтеринг).
-    При запросе машины кейтеринга модуль Регистрации передаёт:
-      - FlightId: идентификатор рейса.
-      - Meals: массив заказов, где для каждого типа питания указывается количество порций.
+    API для управления процессом доставки питания (кейтеринг) и административных функций.
+    Включает эндпоинты для обновления конфигурации, типов питания, вместимости транспорта, а также для регистрации транспортных средств и перезагрузки приложения.
   version: "1.0.0"
+
 servers:
   - url: https://catering.reaport.ru
-    description: Сервер для кейтеринга
+    description: "Основной сервер для кейтеринга"
+
 tags:
+  - name: catering
+    description: "Публичные эндпоинты для кейтеринга"
   - name: admin
-    description: "Админка"
+    description: "Административные эндпоинты"
+
 paths:
   /request:
     post:
+      tags:
+        - catering
       summary: "Запрос на доставку питания"
       description: |
-        Оркестратор инициирует доставку питания, передавая следующие данные:
-          - FlightId: идентификатор рейса.
-          - Meals: массив объектов, где для каждого типа питания (например, "Standard", "Vegetarian", "Vegan", "Gluten-Free")
-                    указывается количество порций, передаваемое модулем Регистрации.
+        Оркестратор (или любой внешний сервис) инициирует доставку питания, передавая:
+          - FlightId (идентификатор рейса)
+          - NodeId (необязательно, узел назначения)
+          - Meals (список объектов, где указывается тип питания и количество порций)
       operationId: RequestCatering
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CateringRequest'
+              $ref: "#/components/schemas/CateringRequest"
       responses:
-        '200':
+        "200":
           description: "Доставка питания успешно инициирована"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CateringResponse'
-              examples:
-                ValidRequest:
-                  value:
-                    Waiting: false
-                    Status: "success"
-        '400':
-          description: "Неверный запрос: отсутствует обязательное поле или переданы некорректные данные."
+                $ref: "#/components/schemas/CateringResponse"
+        "400":
+          description: "Неверный запрос: отсутствует обязательное поле или некорректные данные"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                InvalidInput:
-                  value:
-                    Error: "Некорректные входные параметры."
-        '500':
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
           description: "Внутренняя ошибка сервера"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                InternalServerError:
-                  value:
-                    Error: "InternalServerError"
+                $ref: "#/components/schemas/ErrorResponse"
 
   /mealtypes:
     get:
+      tags:
+        - catering
       summary: "Получение доступных типов питания"
       description: |
-        Модуль регистрации запрашивает список типов питания для отображения пользователю.
+        Возвращает актуальный список типов питания, который может быть изменён через админку.
       operationId: GetMealTypes
       responses:
-        '200':
+        "200":
           description: "Список типов питания успешно получен"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MealTypesResponse'
-              examples:
-                DefaultMealTypes:
-                  value:
-                    mealTypes: ["Standard", "Vegetarian", "Vegan", "Gluten-Free"]
-        '500':
+                $ref: "#/components/schemas/MealTypesResponse"
+        "500":
           description: "Внутренняя ошибка сервера"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                InternalServerError:
-                  value:
-                    Error: "InternalServerError"
+                $ref: "#/components/schemas/ErrorResponse"
 
-  /getCapacity:
-    get:
+  /admin/update:
+    post:
       tags:
         - admin
-      summary: "Получение текущей вместимости транспортного средства"
-      description: "Возвращает текущую вместимость транспортного средства (например, количество порций)."
-      operationId: GetCapacity
+      summary: "Обновление конфигурации приложения"
+      description: "Позволяет обновить настройки конфигурации (число повторов, скорость движения, кол-во регистрируемых ТС)."
+      operationId: UpdateConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateConfigRequest"
       responses:
-        '200':
-          description: "Вместимость успешно получена"
+        "200":
+          description: "Конфигурация успешно обновлена"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VehicleCapacity'
-              examples:
-                CurrentCapacity:
-                  value:
-                    Capacity: 100
-        '500':
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: "Неверный запрос: некорректные данные"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
           description: "Внутренняя ошибка сервера"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                InternalServerError:
-                  value:
-                    Error: "InternalServerError"
+                $ref: "#/components/schemas/ErrorResponse"
 
-  /updateCapacity:
+  /admin/toggleMode:
+    post:
+      tags:
+        - admin
+      summary: "Переключение режима Mock/Real"
+      description: "Переключает режим работы между Mock и Real."
+      operationId: ToggleMode
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                useMock:
+                  type: string
+                  description: "Строка 'true' или 'false'"
+      responses:
+        "200":
+          description: "Режим работы успешно переключён"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "500":
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/updateMealTypes:
+    post:
+      tags:
+        - admin
+      summary: "Обновление списка типов питания"
+      description: |
+        Принимает JSON-объект вида:
+        {
+          "MealTypes": ["Standard", "Vegetarian", ...]
+        }
+        и обновляет список допустимых типов питания.
+      operationId: UpdateMealTypes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MealTypesResponse"
+      responses:
+        "200":
+          description: "Список типов питания успешно обновлён"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: "Неверный запрос: некорректные данные"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/updateCapacityAdmin:
     post:
       tags:
         - admin
       summary: "Обновление вместимости транспортного средства"
-      description: "Позволяет обновить вместимость транспортного средства. В запросе передаётся новое значение."
+      description: |
+        Принимает JSON-объект вида:
+        {
+          "Capacity": 150
+        }
+        и устанавливает новую вместимость (количество порций).
       operationId: UpdateCapacity
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VehicleCapacity'
+              $ref: "#/components/schemas/VehicleCapacity"
       responses:
-        '200':
+        "200":
           description: "Вместимость успешно обновлена"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VehicleCapacity'
-              examples:
-                UpdatedCapacity:
-                  value:
-                    Capacity: 150
-        '400':
-          description: "Неверный запрос: передано некорректное значение вместимости."
+                type: object
+                properties:
+                  message:
+                    type: string
+                  capacity:
+                    type: number
+        "400":
+          description: "Неверный запрос: некорректные данные вместимости"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                InvalidCapacity:
-                  value:
-                    Error: "Неверное значение вместимости."
-        '500':
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
           description: "Внутренняя ошибка сервера"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                InternalServerError:
-                  value:
-                    Error: "InternalServerError"
+                $ref: "#/components/schemas/ErrorResponse"
 
   /admin/registerVehicle:
     post:
       tags:
         - admin
       summary: "Регистрация транспортного средства"
-      description: "Регистрирует сразу несколько транспортных средств, число которых определяется в конфигурации."
+      description: |
+        Регистрирует заданное число транспортных средств (по конфигурации).
+        Принимает JSON-объект вида:
+        {
+          "Type": "catering"
+        }
       operationId: RegisterVehicle
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterVehicleRequest'
+              $ref: "#/components/schemas/RegisterVehicleRequest"
       responses:
-        '200':
+        "200":
           description: "Транспортные средства успешно зарегистрированы"
           content:
             application/json:
@@ -189,109 +260,29 @@ paths:
                     type: integer
                   message:
                     type: string
-              examples:
-                Success:
-                  value:
-                    registeredVehicles: 2
-                    message: "Vehicles registered successfully."
-        '400':
-          description: "Неверный запрос: отсутствует поле Type."
+        "400":
+          description: "Неверный запрос: некорректный тип"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
           description: "Внутренняя ошибка сервера"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /admin/updateMealTypes:
-    post:
-      tags:
-        - admin
-      summary: "Обновление списка типов питания"
-      description: "Обновляет список типов питания, принимая массив строк."
-      operationId: UpdateMealTypes
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                mealTypes:
-                  type: array
-                  items:
-                    type: string
-      responses:
-        '200':
-          description: "Список типов питания успешно обновлён"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              examples:
-                Success:
-                  value:
-                    message: "Meal types updated successfully."
-        '500':
-          description: "Внутренняя ошибка сервера"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /admin/toggleMode:
-    post:
-      tags:
-        - admin
-      summary: "Переключение режима работы"
-      description: "Переключает режим работы (Mock/Real)."
-      operationId: ToggleMode
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                useMock:
-                  type: boolean
-      responses:
-        '200':
-          description: "Режим работы успешно переключён"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              examples:
-                Success:
-                  value:
-                    message: "Communication mode updated."
-        '500':
-          description: "Внутренняя ошибка сервера"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /admin/reload:
     post:
       tags:
         - admin
       summary: "Полная перезагрузка приложения"
-      description: "Сбрасывает все данные и переинициализирует транспортные средства."
+      description: |
+        Сбрасывает все данные и переинициализирует внутренние структуры (реестр ТС и счётчики).
       operationId: Reload
       responses:
-        '200':
+        "200":
           description: "Приложение перезагружено"
           content:
             application/json:
@@ -300,56 +291,12 @@ paths:
                 properties:
                   message:
                     type: string
-              examples:
-                Success:
-                  value:
-                    message: "Application reloaded successfully."
-        '500':
+        "500":
           description: "Внутренняя ошибка сервера"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /admin/update:
-    post:
-      tags:
-        - admin
-      summary: "Обновление конфигурации приложения"
-      description: "Обновляет настройки приложения (ConflictRetryCount, MovementSpeed, NumberOfCateringVehicles) через JSON."
-      operationId: UpdateConfig
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateConfigRequest'
-      responses:
-        '200':
-          description: "Конфигурация успешно обновлена"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              examples:
-                Success:
-                  value:
-                    message: "Configuration updated successfully."
-        '400':
-          description: "Неверный запрос: отсутствуют или некорректные данные."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: "Внутренняя ошибка сервера"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   schemas:
@@ -358,17 +305,17 @@ components:
       properties:
         AircraftId:
           type: string
-          description: "Идентификатор самолёта, для которого осуществляется доставка питания."
+          description: "Идентификатор рейса"
         NodeId:
           type: string
-          description: "Идентификатор точки, куда осуществляется доставка питания."
+          description: "Идентификатор узла (необязательно)"
         Meals:
           type: array
-          description: "Массив заказов, где каждый объект содержит тип питания и количество заказанных порций."
           items:
-            $ref: '#/components/schemas/MealOrder'
+            $ref: "#/components/schemas/MealOrder"
+          description: "Список заказов (тип питания + количество порций)"
       required:
-        - FlightId
+        - AircraftId
         - Meals
 
     MealOrder:
@@ -376,24 +323,70 @@ components:
       properties:
         MealType:
           type: string
-          description: "Тип питания (например, 'Standard', 'Vegetarian', 'Vegan', 'Gluten-Free')."
+          description: "Тип питания (например, 'Standard', 'Vegetarian' и т.д.)"
         Count:
           type: integer
           minimum: 0
-          description: "Количество заказанных порций для данного типа питания."
+          description: "Количество порций"
       required:
         - MealType
         - Count
+
+    MealTypesResponse:
+      type: object
+      properties:
+        MealTypes:
+          type: array
+          items:
+            type: string
+          description: "Список допустимых типов питания"
+      required:
+        - MealTypes
+
+    RegisterVehicleRequest:
+      type: object
+      properties:
+        Type:
+          type: string
+          description: "Тип регистрируемого ТС (например, 'catering')"
+      required:
+        - Type
+
+    UpdateConfigRequest:
+      type: object
+      properties:
+        ConflictRetryCount:
+          type: integer
+          description: "Число повторов при конфликте"
+        MovementSpeed:
+          type: number
+          description: "Скорость движения ТС"
+        NumberOfCateringVehicles:
+          type: integer
+          description: "Количество ТС, регистрируемых за один вызов"
+      required:
+        - ConflictRetryCount
+        - MovementSpeed
+        - NumberOfCateringVehicles
+
+    VehicleCapacity:
+      type: object
+      properties:
+        Capacity:
+          type: number
+          description: "Вместимость транспортного средства (например, кол-во порций)"
+      required:
+        - Capacity
 
     CateringResponse:
       type: object
       properties:
         Waiting:
           type: boolean
-          description: "Флаг, указывающий, ожидается ли транспортное средство."
+          description: "Указывает, ожидается ли транспорт"
         Status:
           type: string
-          description: "Статус операции (например, 'success')."
+          description: "Статус операции (например, 'success')"
       required:
         - Waiting
         - Status
@@ -403,52 +396,6 @@ components:
       properties:
         Error:
           type: string
-          description: "Сообщение об ошибке."
+          description: "Сообщение об ошибке"
       required:
         - Error
-
-    MealTypesResponse:
-      type: object
-      properties:
-        mealTypes:
-          type: array
-          items:
-            type: string
-          description: "Список доступных типов питания."
-      required:
-        - mealTypes
-
-    VehicleCapacity:
-      type: object
-      properties:
-        Capacity:
-          type: number
-          description: "Вместимость транспортного средства (например, количество порций)."
-      required:
-        - Capacity
-
-    UpdateConfigRequest:
-      type: object
-      properties:
-        ConflictRetryCount:
-          type: integer
-          description: "Число повторов при конфликте."
-        MovementSpeed:
-          type: number
-          description: "Скорость движения транспортного средства."
-        NumberOfCateringVehicles:
-          type: integer
-          description: "Количество транспортных средств, регистрируемых за один вызов."
-      required:
-        - ConflictRetryCount
-        - MovementSpeed
-        - NumberOfCateringVehicles
-
-    RegisterVehicleRequest:
-      type: object
-      properties:
-        Type:
-          type: string
-          description: "Тип транспортного средства (например, 'catering')."
-      required:
-        - Type
