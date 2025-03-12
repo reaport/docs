@@ -16,7 +16,7 @@ paths:
       description: |
         После высадки пассажиров оркестратор отправляет запрос на заправку.
         Если количество топлива меньше 0, его значение обрабатывается как 0, и заправка не требуется.
-        В процессе обработки запроса производится проверка наличия свободных машин. Если свободные машины отсутствуют, возвращается соответствующая ошибка.
+        В процессе обработки запроса производится проверка наличия свободных машин. Если свободные машины отсутствуют, возвращаем уведомление о необходимости ожидания.
       operationId: RequestRefueling
       requestBody:
         required: true
@@ -66,6 +66,75 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
+  # Методы админки
+  /admin:
+    get:
+      summary: Отобразить административную панель
+      description: Возвращает HTML-страницу административной панели с возможностью настройки параметров и просмотра списка транспортных средств.
+      tags:
+        - admin
+      operationId: admin_getPanel
+      responses:
+        '200':
+          description: HTML-страница админки
+
+  /admin/update-parameters:
+    post:
+      summary: Обновить конфигурационные параметры
+      description: Обновляет глобальные параметры, такие как количество повторных попыток при конфликте.
+      tags:
+        - admin
+      operationId: admin_updateParameters
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                conflictRetryCount:
+                  type: integer
+                  description: Количество повторных попыток при конфликте
+              required:
+                - conflictRetryCount
+      responses:
+        '200':
+          description: Параметры успешно обновлены.
+
+  /admin/register:
+    post:
+      summary: Зарегистрировать новое транспортное средство
+      description: Регистрирует новое транспортное средство через административную панель.
+      tags:
+        - admin
+      operationId: admin_registerVehicle
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                vehicleType:
+                  type: string
+                  description: Тип транспортного средства (например, "refueling")
+              required:
+                - vehicleType
+      responses:
+        '200':
+          description: Транспортное средство успешно зарегистрировано.
+
+  /admin/restart:
+    post:
+      summary: Перезагрузка приложения
+      description: Перезапускает приложение
+      tags:
+        - admin
+      operationId: admin_restart
+      responses:
+        '200':
+          description: Приложение перезапущено.
+
 components:
   schemas:
     RequestRefuelingInput:
@@ -77,16 +146,20 @@ components:
         FuelNeeded:
           type: integer
           description: Количество топлива, необходимое для заправки (в литрах). Может быть 0 или больше.
+        AirplaneId:
+          type: string
+          description: Идентификатор самолёта.
       required:
         - NodeId
         - FuelNeeded
+        - AirplaneId
 
     RequestRefuelingResponse:
       type: object
       properties:
         wait:
           type: boolean
-          description: Сообщение о наличии свободных машин.
+          description: Флаг, указывающий, что необходимо ожидание свободных машин.
       required:
         - wait
 
