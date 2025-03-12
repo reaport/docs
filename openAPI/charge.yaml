@@ -141,6 +141,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ChargingErrorResponse'
 
+  /admin/reload:
+    post:
+      summary: Полная перезагрузка приложения
+      description: Полностью сбрасывает текущее состояние Charge API
+      tags:
+        - admin
+      operationId: ReloadApplication
+      responses:
+        '200':
+          description: Приложение успешно перезагружено и все данные сброшены.
+        '500':
+          description: Внутренняя ошибка сервера при перезагрузке.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingErrorResponse'
+
 components:
   schemas:
     ChargingRequest:
