@@ -9,7 +9,7 @@ servers:
     description: Сервер для табло
 
 paths:
-  /tickets/available:
+  /api/tickets/available:
     get:
       summary: Получение списка доступных рейсов
       description: |
