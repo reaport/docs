@@ -1,21 +1,27 @@
 openapi: 3.0.0
 info:
-  title: Cleaning API
+  title: "Cleaning API"
   description: |
-    API для управления процессом очистки самолётов. 
-    Модуль очистки работает параллельно с кейтерингом и отвечает за очистку салона и заправку водой.
-  version: 1.0.0
-  
+    API для управления процессом очистки самолётов.
+    Модуль очистки отвечает за очистку салона и заправку водой.
+  version: "1.0.0"
 servers:
   - url: https://cleaning.reaport.ru
-    description: Сервер для разработки, развернутый при помощи dokploy
+    description: "Сервер для клининга"
+tags:
+  - name: cleaning
+    description: "Публичные эндпоинты для очистки"
+  - name: admin
+    description: "Административные эндпоинты"
 
 paths:
   /request:
     post:
-      summary: Запрос на очистку
+      tags:
+        - cleaning
+      summary: "Запрос на очистку"
       description: |
-        После высадки пассажиров оркестратор отправляет запрос на очистку самолета.
+        После высадки пассажиров оркестратор отправляет запрос на очистку самолёта.
         Запрос включает информацию о необходимой очистке и заправке водой.
       operationId: RequestCleaning
       requestBody:
@@ -26,7 +32,7 @@ paths:
               $ref: '#/components/schemas/RequestCleaningInput'
       responses:
         '200':
-          description: Успешный ответ
+          description: "Успешный ответ"
           content:
             application/json:
               schema:
@@ -36,22 +42,22 @@ paths:
                   value:
                     wait: true
         '400':
-          description: Неверный запрос
+          description: "Неверный запрос"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RequestCleaningErrorResponse'
               examples:
-                MissingFlightNumber:
+                MissingAircraftId:
                   value:
                     errorCode: 100
-                    message: "FlightNumber is required"
+                    message: "AircraftId is required"
                 InvalidWaterAmount:
                   value:
                     errorCode: 101
                     message: "WaterAmount must be a non-negative integer"
         '500':
-          description: Внутренняя ошибка сервера
+          description: "Внутренняя ошибка сервера"
           content:
             application/json:
               schema:
@@ -62,6 +68,175 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
+  /admin/update:
+    post:
+      tags:
+        - admin
+      summary: "Обновление конфигурации приложения"
+      description: "Обновляет настройки: число повторов при конфликте, количество транспортных средств."
+      operationId: UpdateConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateConfigRequest'
+      responses:
+        '200':
+          description: "Конфигурация успешно обновлена"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: "Неверный запрос"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/toggleMode:
+    post:
+      tags:
+        - admin
+      summary: "Переключение режима (Mock/Real)"
+      description: "Принимает form-data с полем useMock (true/false)"
+      operationId: ToggleMode
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                useMock:
+                  type: string
+      responses:
+        '200':
+          description: "Режим успешно переключён"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/updateCapacityAdmin:
+    post:
+      tags:
+        - admin
+      summary: "Обновление вместимости транспортного средства"
+      description: "Позволяет обновить вместимость транспортного средства. В запросе передаётся новое значение."
+      operationId: UpdateCapacity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleCapacity'
+      responses:
+        '200':
+          description: "Вместимость успешно обновлена"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  capacity:
+                    type: number
+        '400':
+          description: "Неверный запрос: передано некорректное значение вместимости."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/registerVehicle:
+    post:
+      tags:
+        - admin
+      summary: "Регистрация транспортного средства"
+      description: "Принимает JSON-объект { \"Type\": \"cleaning\" } и регистрирует транспортные средства согласно конфигурации."
+      operationId: RegisterVehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterVehicleRequest'
+      responses:
+        '200':
+          description: "Транспортные средства успешно зарегистрированы"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  registeredVehicles:
+                    type: integer
+                  message:
+                    type: string
+        '400':
+          description: "Неверный запрос"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/reload:
+    post:
+      tags:
+        - admin
+      summary: "Полная перезагрузка приложения"
+      description: "Сбрасывает все данные и переинициализирует реестр транспортных средств."
+      operationId: Reload
+      responses:
+        '200':
+          description: "Приложение перезагружено"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     RequestCleaningInput:
@@ -69,13 +244,13 @@ components:
       properties:
         AircraftId:
           type: string
-          description: Id самолёта, для которого требуется очистка.
+          description: "Id самолёта, для которого требуется очистка."
         NodeId:
           type: string
-          description: Id узла куда ехать.
+          description: "Id узла, куда необходимо ехать."
         WaterAmount:
           type: integer
-          description: Количество воды, необходимое для заправки (0 или больше).
+          description: "Количество воды, необходимое для заправки (0 или больше)."
       required:
         - AircraftId
         - NodeId
@@ -86,19 +261,59 @@ components:
       properties:
         wait:
           type: boolean
-          description: Информация о наличии свободных машин.
+          description: "Информация о наличии свободных машин."
       required:
-        - status
+        - wait
 
     RequestCleaningErrorResponse:
       type: object
       properties:
         errorCode:
           type: integer
-          description: Код ошибки, указывающий на тип проблемы.
+          description: "Код ошибки."
         message:
           type: string
-          description: Сообщение об ошибке, предоставляющее дополнительные детали.
+          description: "Сообщение об ошибке."
       required:
         - errorCode
         - message
+
+    UpdateConfigRequest:
+      type: object
+      properties:
+        ConflictRetryCount:
+          type: integer
+          description: "Число повторов при конфликте."
+        NumberOfCleaningVehicles:
+          type: integer
+          description: "Количество транспортных средств, регистрируемых за один вызов."
+      required:
+        - ConflictRetryCount
+        - NumberOfCleaningVehicles
+
+    VehicleCapacity:
+      type: object
+      properties:
+        Capacity:
+          type: number
+          description: "Вместимость транспортного средства (например, количество порций или единиц воды)."
+      required:
+        - Capacity
+
+    RegisterVehicleRequest:
+      type: object
+      properties:
+        Type:
+          type: string
+          description: "Тип транспортного средства (например, 'cleaning')."
+      required:
+        - Type
+
+    ErrorResponse:
+      type: object
+      properties:
+        Error:
+          type: string
+          description: "Сообщение об ошибке."
+      required:
+        - Error
