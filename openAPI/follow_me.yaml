@@ -262,10 +262,14 @@ components:
         NodeTo:
           type: string
           description: Точка, куда надо привезти самолет.
+        IsTakeoff:
+          type: boolean
+          description: Посадочная полоса или нет.
       required:
         - AirplaneId
         - NodeFrom
         - NodeTo
+        - IsTakeoff
 
     WeNeedFollowMeResponse:
       type: object
