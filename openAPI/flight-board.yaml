@@ -319,13 +319,8 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                destination:
-                  type: string
-                  description: Город назначения рейса
-              required:
-                - destination
+              type: string
+              example: "Москва"
             examples:
               ExampleRequest:
                 value:
@@ -585,7 +580,8 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: "Internal server error"              
+                example: "Internal server error"  
+            
   /api/aircraftdeparture/aircraft-departure:
     get:
       summary: Получение информации о вылетающем самолете
@@ -621,7 +617,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/AvailableSeatsInfo'
+              $ref: '#/components/schemas/SeatInfo'
       responses:
         '200':
           description: Успешное получение информации о вылетающем самолете
@@ -632,9 +628,16 @@ paths:
               examples:
                 ValidResponse:
                   value:
-                    flightId: "FL123"
-                    boardingStartTime: "2025-03-02T19:00:00Z"
-                    boardingEndTime: "2025-03-02T19:10:00Z"
+                    aircraftId: "AC123"
+                    availableSeats:
+                      - seatNumber: "A1"
+                        seatClass: "economy"
+                      - seatNumber: "B2"
+                        seatClass: "business"
+                    baggage: "1 checked bag, 1 carry-on"
+                    boardingStartTime: "2025-03-13T20:10:39.254Z"
+                    boardingEndTime: "2025-03-13T20:10:39.254Z"
+                    flightId: "KU001"
         '400':
           description: Ошибка валидации входных данных
           content:
