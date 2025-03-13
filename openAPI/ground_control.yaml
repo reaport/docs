@@ -170,6 +170,9 @@ paths:
                 to:
                   type: string
                   description: ID следующего узла
+                withAirplane:
+                  type: string
+                  description: ID самолета, который следует за follow-me
               required:
                 - vehicleId
                 - vehicleType
