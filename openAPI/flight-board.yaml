@@ -3,6 +3,11 @@ info:
   title: Airport Management API
   version: 1.0.0
   description: API для управления аэропортом
+
+servers:
+  - url: https://flight-board.reaport.ru
+    description: Сервер для табло
+
 paths:
   /tickets/available:
     get:
