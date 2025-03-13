@@ -156,25 +156,7 @@ paths:
         Метод возвращает информацию о регистрации на рейс, включая данные о самолете и времени регистрации.
         Также отправляет эти данные в модуль регистрации.
       operationId: GetRegistrationInfo
-      parameters:
-        - name: flightId
-          in: query
-          required: true
-          description: Идентификатор рейса
-          schema:
-            type: string
-        - name: cityFrom
-          in: query
-          required: true
-          description: Город вылета
-          schema:
-            type: string
-        - name: cityTo
-          in: query
-          required: true
-          description: Город прибытия
-          schema:
-            type: string
+      
       responses:
         '200':
           description: Успешное получение информации о регистрации
