@@ -150,73 +150,92 @@ paths:
                     message: "InternalServerError"
                     
   /api/registration/register:
-  get:
-    summary: Получение информации о регистрации на рейс
-    description: |
-      Метод возвращает информацию о регистрации на рейс, включая данные о самолете и времени регистрации.
-      Также отправляет эти данные в модуль регистрации.
-    operationId: GetRegistrationInfo
-    responses:
-      '200':
-        description: Успешное получение информации о регистрации
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FlightRegistrationResponse'
-            examples:
-              ValidResponse:
-                value:
-                  flightId: "KU001"
-                  flightName: "SU-KU001"
-                  endRegisterTime: "2025-03-02T19:00:00Z"
-                  departureTime: "2025-03-02T20:30:00Z"
-                  startPlantingTime: "2025-03-02T19:00:00Z"
-                  seatsAircraft:
-                    - seatNumber: "A1"
-                      seatClass: "economy"
-                    - seatNumber: "B2"
-                      seatClass: "business"
-      '400':
-        description: Ошибка валидации входных данных
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-            examples:
-              MissingFlightId:
-                value:
-                  errorCode: 100
-                  message: "FlightId is required"
-              MissingCities:
-                value:
-                  errorCode: 102
-                  message: "CityFrom and CityTo are required"
-              InvalidCities:
-                value:
-                  errorCode: 103
-                  message: "Flight does not match the specified cities"
-      '404':
-        description: Рейс не найден
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-            examples:
-              FlightNotFound:
-                value:
-                  errorCode: 101
-                  message: "Invalid FlightID"
-      '500':
-        description: Внутренняя ошибка сервера
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-            examples:
-              InternalServerError:
-                value:
-                  errorCode: 500
-                  message: "InternalServerError"
+    get:
+      summary: Получение информации о регистрации на рейс
+      description: |
+        Метод возвращает информацию о регистрации на рейс, включая данные о самолете и времени регистрации.
+        Также отправляет эти данные в модуль регистрации.
+      operationId: GetRegistrationInfo
+      parameters:
+        - name: flightId
+          in: query
+          required: true
+          description: Идентификатор рейса
+          schema:
+            type: string
+        - name: cityFrom
+          in: query
+          required: true
+          description: Город вылета
+          schema:
+            type: string
+        - name: cityTo
+          in: query
+          required: true
+          description: Город прибытия
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешное получение информации о регистрации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightRegistrationResponse'
+              examples:
+                ValidResponse:
+                  value:
+                    flightId: "KU001"
+                    flightName: "SU-KU001"
+                    endRegisterTime: "2025-03-02T19:00:00Z"
+                    departureTime: "2025-03-02T20:30:00Z"
+                    startPlantingTime: "2025-03-02T19:00:00Z"
+                    seatsAircraft:
+                      - seatNumber: "A1"
+                        seatClass: "economy"
+                      - seatNumber: "B2"
+                        seatClass: "business"
+        '400':
+          description: Ошибка валидации входных данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                MissingFlightId:
+                  value:
+                    errorCode: 100
+                    message: "FlightId is required"
+                MissingCities:
+                  value:
+                    errorCode: 102
+                    message: "CityFrom and CityTo are required"
+                InvalidCities:
+                  value:
+                    errorCode: 103
+                    message: "Flight does not match the specified cities"
+        '404':
+          description: Рейс не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                FlightNotFound:
+                  value:
+                    errorCode: 101
+                    message: "Invalid FlightID"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InternalServerError:
+                  value:
+                    errorCode: 500
+                    message: "InternalServerError"
                     
   /api/flightsettings/save:
     post:
