@@ -43,6 +43,7 @@ paths:
           - direction: маршрут рейса.
           - departureTime: время вылета рейса.
           - status: статус операции ("куплен").
+          - registrationStartTime: время начала регистрации на рейс.
       operationId: buyTicket
       requestBody:
         required: true
@@ -94,6 +95,10 @@ paths:
                   status:
                     type: string
                     description: Статус операции ("куплен").
+                  registrationStartTime:
+                    type: string
+                    format: date-time
+                    description: Время начала регистрации на рейс.
         '400':
           description: Некорректные входные данные или неверный тип питания.
         '409': 
@@ -237,6 +242,10 @@ paths:
                   status:
                     type: string
                     description: Текущий статус билета.
+                  registrationStartTime:
+                    type: string
+                    format: date-time
+                    description: Время начала регистрации.
         '404':
           description: Билет не найден.
   /flight/{flightId}/passengers:
