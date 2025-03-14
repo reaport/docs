@@ -37,6 +37,10 @@ paths:
                       type: string
                       example: "Москва"
                       description: Город прибытия
+                    startRegisterTime:
+                      type: string
+                      format: date-time
+                      description: Время начала регистрации
                     takeoffDateTime:
                       type: string
                       format: date-time
@@ -59,6 +63,7 @@ paths:
                     - flightId: "KU001"
                       cityFrom: "Мосипск"
                       cityTo: "Москва"
+                      startRegisterTime: "2025-03-02T18:30:00Z"
                       takeoffDateTime: "2025-03-02T20:30:00Z"
                       availableSeats:
                         - seatClass: "economy"
@@ -168,7 +173,7 @@ paths:
                 ValidResponse:
                   value:
                     flightId: "KU001"
-                    flightName: "SU-KU001"
+                    flightName: "KU001"
                     endRegisterTime: "2025-03-02T19:00:00Z"
                     departureTime: "2025-03-02T20:30:00Z"
                     startPlantingTime: "2025-03-02T19:00:00Z"
