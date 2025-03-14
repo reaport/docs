@@ -110,7 +110,7 @@ components:
           type: number
           format: float
           description: Вес багажа (кг)
-        mealOption:
+        mealType:
           type: string
           nullable: true
           enum: ["Standard", "Vegetarian", "Vegan", "Gluten-Free"] # Тип питания как enum
@@ -118,7 +118,7 @@ components:
       example:
         passengerId: "123e4567-e89b-12d3-a456-426614174000"
         baggageWeight: 12.5
-        mealOption: "Standard"
+        mealType: "Standard"
 
     RegisterPassengerResponse:
       type: object
