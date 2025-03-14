@@ -83,51 +83,6 @@ paths:
                     errorCode: 500
                     message: "InternalServerError"
 
-  /navigate:
-    post:
-      summary: Отправка маршрута передвижения
-      description: |
-        Отправляет в машину маршрут передвижения.
-        Вышка наземного движения высылает значения поворота, которые обрабатываются и передаются в самолет.
-      tags:
-        - follow-me
-      operationId: FollowMeNavigate
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FollowMeNavigateRequest'
-      responses:
-        '204':
-          description: Успешный ответ
-        '400':
-          description: Неверный запрос
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FollowMeNavigateErrorResponse'
-              examples:
-                InvalidNavigate:
-                  value:
-                    errorCode: 30
-                    message: "Invalid Navigate"
-                WrongNavigate:
-                  value:
-                    errorCode: 31
-                    message: "Wrong Navigate. It should be [follow, right, left, stop]"
-        '500':
-          description: Внутренняя ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FollowMeNavigateErrorResponse'
-              examples:
-                InternalServerError:
-                  value:
-                    errorCode: 500
-                    message: "InternalServerError"
-
   /admin/cars:
     get:
       summary: Получить список всех машин
@@ -187,6 +142,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /admin/cars/reload:
+    post:
+      summary: Перезагрузить все машины
+      description: Перезагружает все машины в системе.
+      tags:
+        - Admin
+      operationId: ReloadCars
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReloadCarsResponse'
+              examples:
+                CarsReloaded:
+                  value:
+                    Message: "Все машины успешно перезагружены."
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /admin/logs:
     get:
       summary: Получить логи
@@ -208,6 +188,31 @@ paths:
                   value:
                     - "2023-10-01T12:34:56 | INFO | Машина добавлена"
                     - "2023-10-01T12:35:10 | ERROR | Ошибка при чтении логов"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/logs/clear:
+    post:
+      summary: Очистить логи
+      description: Очищает все логи системы.
+      tags:
+        - Admin
+      operationId: ClearLogs
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClearLogsResponse'
+              examples:
+                LogsCleared:
+                  value:
+                    Message: "Логи успешно очищены."
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -240,6 +245,31 @@ paths:
                     - Timestamp: "2023-10-01T12:35:10"
                       CarId: "1111111-60bc-464d-8759-c04b79c25b25"
                       Movement: "Машина удалена"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/audit/clear:
+    post:
+      summary: Очистить аудит
+      description: Очищает все записи аудита.
+      tags:
+        - Admin
+      operationId: ClearAudit
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClearAuditResponse'
+              examples:
+                AuditCleared:
+                  value:
+                    Message: "Аудит успешно очищен."
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -351,7 +381,34 @@ components:
           description: Сообщение о добавлении машины.
       required:
         - Message
-        
+
+    ReloadCarsResponse:
+      type: object
+      properties:
+        Message:
+          type: string
+          description: Сообщение о перезагрузке машин.
+      required:
+        - Message
+
+    ClearLogsResponse:
+      type: object
+      properties:
+        Message:
+          type: string
+          description: Сообщение об очистке логов.
+      required:
+        - Message
+
+    ClearAuditResponse:
+      type: object
+      properties:
+        Message:
+          type: string
+          description: Сообщение об очистке аудита.
+      required:
+        - Message
+
     ErrorResponse:
       type: object
       properties:
