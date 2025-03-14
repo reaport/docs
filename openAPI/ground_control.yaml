@@ -333,7 +333,27 @@ paths:
         '400':
           description: Неверные данные запроса
         '409':
-          description: Нет свободного парковочного места для самолета      
+          description: Нет свободного парковочного места для самолета
+
+  /airplane/{id}/take-off:
+    post:
+      summary: Фиксация вылета самолета
+      description: Удаляется самолет с карты
+      tags:
+        - airplane
+      operationId: airplane_takeOff
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID самолета
+      responses:
+        '200':
+          description: Самолет улетел
+        '404':
+          description: Самолет не найден на ВПП
 
 components:
   schemas:
