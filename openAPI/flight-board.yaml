@@ -5,7 +5,7 @@ info:
   description: API для управления аэропортом
 
 servers:
-  - url: https://flight-board.reaport.ru
+  - url: https://flight-board.reaport.ru/panel
     description: Сервер для табло
 
 paths:
