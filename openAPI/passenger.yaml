@@ -1,93 +1,112 @@
-openapi: 3.0.3
+openapi: 3.0.1
 info:
-  title: Passenger
-  version: '1.0'
+  title: Passenger API
+  version: v1
+
 servers:
-  - url: https://passenger.reaport.ru/v2
+- url: https://passenger.reaport.ru/
+
 paths:
-  /find:
+  /driver/pause:
+    post: 
+      description: | 
+        Приостанавливает работу модуля пассажиров. При вызове этого эндпоинта приостанавлиавется таймер,
+        отвечающий за мониторинг рейсов и выполнение действий пассажиров
+      tags:
+        - Driver
+      responses:
+        '200':
+          description: OK
+  /driver/resume:
+    post:
+      description: | 
+        Возобновляет работу пассажиров.
+
+      tags:
+        - Driver
+      responses:
+        '200':
+          description: OK
+  /flights/initialisedFlights:
     get:
-      description: |
-        Поиск пассажира по переданному параметру.
-        **Только один из параметров (`passengerUUID` или `ticketUUID`) может быть передан. 
-        Передача обоих параметров одновременно не допускается.**
-        
-        Допускается не передавать параметры. В этом случае будут возвращены все существующие пассажиры.
-      
-      parameters:
-        - in: query
-          name: passengerUUID
-          required: false
-          schema:
-            type: string
-            format: uuid
-            example: "123e4567-e89b-12d3-a456-426614174000"
-          description: Уникальный идентификатор пассажира. Не использовать одновременно с `ticketUUID`.
-
-        - in: query
-          name: ticketUUID
-          required: false
-          schema:
-            type: string
-            format: uuid
-            example: "987e6543-e21b-45d3-b654-426614179999"
-          description: Уникальный идентификатор билета. Не использовать одновременно с `passengerUUID`.
-
+      description: | 
+        Возвращает список инициализированных рейсов, с которыми работает модуль пассажиров на данный момент.
+      tags:
+        - Flight
       responses:
         '200':
           description: OK
           content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FlightInfo'
             application/json:
               schema:
                 type: array
                 items:
-                  type: object
-                  $ref: "#/components/schemas/Passenger"
-
-        '400':
-          description: "Bad request: you may only pass one query parameter (`passengerUUID` или `ticketUUID`)"
-
-        '404':
-          description: Passenger not found
-
-        '500':
-          description: Internal server error
-
+                  $ref: '#/components/schemas/FlightInfo'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FlightInfo'
+  /flights/passengerCount:
+    get:
+      description: | 
+        Возвращает количество живых пассажиров для каждого рейса.
+      tags:
+        - Flight
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PassengersPerFlight'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PassengersPerFlight'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PassengersPerFlight'
 components:
   schemas:
-    Passenger:
+    FlightInfo:
+      required:
+        - availableMealTypes
+        - flightId
       type: object
       properties:
-        uuid:
+        flightId:
           type: string
-          format: uuid
-          description: UUID пассажира.
-
-        mealPreference:
-          description: Гастрономические предпочтения пассажира.
-          oneOf:
-            - type: string
-              description: Пассажир берет только один тип питания
-            - type: array
-              description: Пассажир может выбрать из нескольких типов
-              items:
-                type: string
-
-        baggageWeight:
-          description: Вес багажа пассажира
-          type: number
-          format: float
-          minimum: 0
-        
-        ticketId:
-          description: Идентификатор билета, купленного пассажиром
-          type: string
-          format: uuid
           nullable: true
-
-        status:
+        economySeats:
+          type: integer
+          format: int32
+        vipSeats:
+          type: integer
+          format: int32
+        availableMealTypes:
+          type: array
+          items:
+            type: string
+          nullable: true
+      additionalProperties: false
+    PassengersPerFlight:
+      type: object
+      properties:
+        flightId:
           type: string
-          description: Состояние пассажира
-          enum: ['AwaitingTicket','AwaitingRegistration', 'AwaitingBoarding', 'InTransit', 'OnPlane', 'LeavingAirport']
-      
-      
+          nullable: true
+        passengerCount:
+          type: integer
+          format: int32
+      additionalProperties: false
